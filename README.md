@@ -62,8 +62,9 @@ first-pass transcript, and marking them is what FORMATTING_COMMAND spans are for
    - Drag from `sechs` to `null`. Choose _NUMBER_, rendering _words_, normalized value `6/0`.
      Click _Add span_.
    - Drag from `Klaus` to `Mueller`. Choose _NAMED ENTITY_, kind _person_. Click _Add span_.
-   - **Edit a span:** click `Cefuroxim` again, change the note, click _Update_. **Delete a span:**
-     click a highlighted word or an entry in the _Spans_ list, then _Delete_.
+   - **Edit a span:** click `Cefuroxim` again, change the note, click _Update_. Dragging exactly
+     over a span's words, for example `Klaus` to `Mueller` again, opens that span as well.
+     **Delete a span:** open it either way, or pick it from the _Spans_ list, then click _Delete_.
 6. **Recording conditions** (right column). Header facts, the derived speech rate and the distance
    estimate with its level figures. Type `120` into the speech-rate _Override_ and pick `medium`
    in the distance _Override_; the export uses these instead of the derived values.
