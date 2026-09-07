@@ -6,12 +6,7 @@ import {
   type PairingState,
   type TranscriptImportReport,
 } from 'shared'
-import {
-  analyzeAudio,
-  AUDIO_EXTENSIONS,
-  MIME_TYPES,
-  UnsupportedAudioError,
-} from '../audio/analyze.ts'
+import { analyzeAudio, MIME_TYPES, UnsupportedAudioError } from '../audio/analyze.ts'
 import { config } from '../config.ts'
 import { prisma } from '../db.ts'
 import { HttpError } from '../errors.ts'
@@ -47,11 +42,6 @@ async function registerAudio(file: StoredUpload): Promise<AudioUploadResult> {
     if (e instanceof UnsupportedAudioError) throw new HttpError(415, e.message)
     throw e
   }
-  const claimed = AUDIO_EXTENSIONS[path.extname(filename).toLowerCase()]
-  if (claimed !== facts.kind) {
-    throw new HttpError(415, `File extension says ${claimed} but the content is ${facts.kind}`)
-  }
-
   const waiting = await prisma.transcript.findFirst({
     where: { filename, item: null },
     orderBy: { createdAt: 'asc' },

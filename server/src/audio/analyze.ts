@@ -34,7 +34,11 @@ export interface AudioFacts {
 
 export class UnsupportedAudioError extends Error {}
 
-/** Reads header facts and signal levels from a file on disk. */
+/**
+ * Reads header facts and signal levels from a file on disk. music-metadata picks its parser by
+ * the file extension, so a file whose content does not match its extension fails to parse and
+ * is rejected here as unreadable.
+ */
 export async function analyzeAudio(filePath: string): Promise<AudioFacts> {
   let meta: IAudioMetadata | undefined
   try {
@@ -56,7 +60,8 @@ export async function analyzeAudio(filePath: string): Promise<AudioFacts> {
     durationSec,
     sampleRate: meta.format.sampleRate ?? null,
     channels: meta.format.numberOfChannels ?? null,
-    bitDepth: meta.format.bitsPerSample ?? null,
+    // Lossy containers may carry a nominal sample size (AAC in MP4 says 16); it means nothing.
+    bitDepth: meta.format.lossless ? (meta.format.bitsPerSample ?? null) : null,
     container: meta.format.container ?? null,
     codec: meta.format.codec ?? null,
     metadata: recorderMetadata(meta),

@@ -69,6 +69,25 @@ describe('POST /api/audio', () => {
     expect(detail.body.recording.levels.peakDbfs).toBe(-120)
   })
 
+  it.each(['short.mp3', 'short.m4a'])('accepts %s and reads its facts', async (name) => {
+    const file = path.join(import.meta.dirname, 'fixtures', name)
+    const { body } = await api().post('/api/audio').attach('file', file).expect(201)
+    expect(body.status).toBe('AUTO_REJECTED')
+    expect(body.durationSec).toBeCloseTo(1.5, 0)
+    const { body: detail } = await api().get(`/api/items/${body.itemId}`).expect(200)
+    expect(detail.recording).toMatchObject({ sampleRate: 16000, channels: 1, bitDepth: null })
+    // Levels need ffmpeg for lossy formats; without it the item says so instead of failing.
+    if (detail.recording.levels === null) expect(detail.recording.levelsError).toMatch(/ffmpeg/)
+    else expect(detail.recording.levels.snrDb).toBeGreaterThan(0)
+  })
+
+  it('rejects a file whose extension does not match its content', async () => {
+    const mp3 = path.join(import.meta.dirname, 'fixtures', 'short.mp3')
+    const res = await api().post('/api/audio').attach('file', mp3, 'renamed.wav').expect(415)
+    expect(res.body.error).toMatch(/not a readable WAV, MP3 or M4A/)
+    expect(await prisma.item.count()).toBe(0)
+  })
+
   it('rejects unsupported extensions before storing anything', async () => {
     const res = await api()
       .post('/api/audio')
