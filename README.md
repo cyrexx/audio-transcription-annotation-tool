@@ -49,7 +49,9 @@ first-pass transcript, and marking them is what FORMATTING_COMMAND spans are for
    and mouse actions_ at the bottom of the transcript for the full list.
 4. **Correct the text.** Click _Edit text_ (or press **Alt+E**). Change `Cefuroxin` to
    `Cefuroxim`, `Leisten Hernie` to `Leistenhernie`, and `Proleen` to `Prolene`. Click _Annotate_
-   to return. The header shows _Saved_ once the autosave has gone through.
+   to return. There is no save button: every change is saved about a second after you make it,
+   and the header goes from _Unsaved changes_ to _✓ Saved_ (usually too fast to notice).
+   **Ctrl+S** saves immediately.
 5. **Add spans** (in _Annotate_ mode; the form appears on the right after each selection):
    - Click `Cefuroxim`. Choose _MEDICAL TERM_, category _drug_, note `Single-Shot-Antibiose`.
      Click _Add span_.
