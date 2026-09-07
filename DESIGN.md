@@ -44,8 +44,9 @@ inside `yarn install` is a worse failure than a labelled gap in an optional esti
 
 **Distance estimate.** RMS and peak over the file, plus RMS over 50 ms windows: the 10th percentile
 is the noise floor (pauses), the 90th the speech level, their difference the level-to-noise ratio.
-Close is ratio ≥ 30 dB and RMS ≥ −25 dBFS; far is ratio < 15 dB or RMS < −40 dBFS; medium is the
-rest. Labelled a heuristic in the UI; fooled by normalization and automatic gain control.
+Close is ratio ≥ 30 dB and speech level ≥ −25 dBFS; far is ratio < 15 dB or speech level
+< −40 dBFS; medium is the rest. Speech level rather than whole-file RMS, because RMS sinks with
+every pause. Labelled a heuristic in the UI; fooled by normalization and automatic gain control.
 
 **One request per uploaded file**, one verdict each, no half-done batches. Files live on disk under
 a UUID name; the database stores the relative path.

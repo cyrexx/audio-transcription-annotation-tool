@@ -10,6 +10,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "node -e \"fs.rmSync('storage',{recursive:true,force:true})\" && prisma migrate reset --force && yarn db:seed",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
   },

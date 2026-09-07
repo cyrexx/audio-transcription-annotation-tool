@@ -30,32 +30,52 @@ Open <http://localhost:5173>. Everything is configured with working defaults; co
 `server/.env.example` to `server/.env` only if you need to change a port, the storage folder or
 the upload limit.
 
-## Demo path (about one minute)
+## Demo path (about five minutes)
 
 `yarn setup` seeds the demo recordings from `demo/` through the real ingest code, so the queue is
-populated on first start.
+populated on first start. Every step below names the exact value to enter; the transcript in
+`demo/transcripts.json` contains deliberate recognition errors for you to correct.
 
-1. **Queue** (home page): three items. Two are over 15 s and `Pending`; `003_kurznotiz.wav` is
-   under 15 s and `Auto-rejected`. Filter by status and sort by duration with the column headers.
-2. Open **001_leistenhernie.wav**. Type your name into the _Annotator_ box in the header.
-3. Press **Alt+K** to play, **Alt+J / Alt+L** to jump. Click any word to jump the audio there.
-4. **Correct the text**: switch to _Edit text_ (button or **Alt+E**), fix `Cefuroxin` to `Cefuroxim`
-   and `Proleen` to `Prolene`, switch back to _Annotate_. Spans stay attached to their words.
-5. **Add spans**: drag across `eintausendfuenfhundert Milligramm`, choose _MEASUREMENT_, enter
-   `1500` `mg` and see the normalized `1.5 g`. Click `Cefuroxim`, choose _MEDICAL_TERM / drug_.
-   Drag across `neue Zeile`, choose _FORMATTING_COMMAND / newline_. Drag across `sechs null`,
-   choose _NUMBER_, value `6/0`, rendering _words_. Overlaps are fine: mark `eintausendfuenfhundert`
-   as a _NUMBER_ inside the measurement.
-6. **Recording conditions** (right column): header facts, derived speech rate and the distance
-   estimate with its RMS, peak and noise-floor numbers. Override either value.
-7. Changes autosave. Click **Mark done**, go back to the queue and click **Export JSONL**.
-8. **Ingest page**: upload `demo/transcripts-with-errors.json` to see the per-row validation report
-   (missing fields, duplicates, a non-object row, and a valid row without audio that lands in the
-   pairing list). Upload any `.wav`, `.mp3` or `.m4a` of your own; a `.txt` or a fake `.wav` is
-   rejected with a reason. Pair the unmatched transcript with any unpaired recording, or paste a
-   transcript on an item's page.
-
-Keyboard shortcuts are listed in the item page under _Keyboard shortcuts and mouse actions_.
+1. **Queue** (home page). Three items: two over 15 s are _Pending_, `003_kurznotiz.wav` is under
+   15 s and _Auto-rejected_. Choose _Pending_ in the _Status_ filter, then click the _Duration_
+   column header to sort.
+2. Click **001_leistenhernie.wav**. Type your name into the _Annotator_ box in the header; it is
+   saved with the item.
+3. **Player.** Press **Alt+K** to play and pause, **Alt+J** / **Alt+L** to jump 3 s, **Alt+,** /
+   **Alt+.** to change speed. Click any word to jump the audio near it. Expand _Keyboard shortcuts
+   and mouse actions_ at the bottom of the transcript for the full list.
+4. **Correct the text.** Click _Edit text_ (or press **Alt+E**). Change `Cefuroxin` to
+   `Cefuroxim`, `Leisten Hernie` to `Leistenhernie`, and `Proleen` to `Prolene`. Click _Annotate_
+   to return. The header shows _Saved_ once the autosave has gone through.
+5. **Add spans** (in _Annotate_ mode; the form appears on the right after each selection):
+   - Click `Cefuroxim`. Choose _MEDICAL TERM_, category _drug_, note `Single-Shot-Antibiose`.
+     Click _Add span_.
+   - Drag from `eintausendfuenfhundert` to `Milligramm`. Choose _MEASUREMENT_, value `1500`,
+     unit `mg`; the form shows the normalized `1.5 g`. Click _Add span_.
+   - **Shift-click** `eintausendfuenfhundert` (inside the measurement). Choose _NUMBER_,
+     rendering _words_, normalized value `1500`. Click _Add span_. The word now carries both spans.
+   - Drag from the first `neue` to the following `Zeile`. Choose _FORMATTING COMMAND_, command
+     _newline_, meaning _command_. Click _Add span_.
+   - Drag from `sechs` to `null`. Choose _NUMBER_, rendering _words_, normalized value `6/0`.
+     Click _Add span_.
+   - Drag from `Klaus` to `Mueller`. Choose _NAMED ENTITY_, kind _person_. Click _Add span_.
+   - **Edit a span:** click `Cefuroxim` again, change the note, click _Update_. **Delete a span:**
+     click a highlighted word or an entry in the _Spans_ list, then _Delete_.
+6. **Recording conditions** (right column). Header facts, the derived speech rate and the distance
+   estimate with its level figures. Type `120` into the speech-rate _Override_ and pick `medium`
+   in the distance _Override_; the export uses these instead of the derived values.
+7. Click **Mark done**. Back in the queue, click **Export JSONL** and open the downloaded file:
+   one line for the item with both transcripts, all spans and the recording conditions.
+8. Open **002_tur_prostata.wav** for the remaining type: drag from `C` to `M` in
+   `C wie Caesar E F U R O X I M`, choose _SPELLED OUT_, resolved word `Cefuroxim`, click
+   _Add span_. Also mark `Universitaetsklinikum Heidelberg` as _NAMED ENTITY / organisation_ and
+   `zwanzig Scharrier` as _MEASUREMENT_ `20` `Ch` after correcting `Scharrier` to `Charriere`.
+9. **Ingest page.** Upload `demo/transcripts-with-errors.json` under _Transcript file_ to see the
+   per-row report: a duplicate path, a missing label, a missing path, a duplicate within the file,
+   a non-object row, and one valid row without audio that lands in _Transcripts without audio_.
+   Under _Audio files_, upload any `.wav`, `.mp3` or `.m4a` of your own; a `.txt` or a renamed
+   non-audio file is rejected with a reason. Select the unmatched transcript and an unpaired
+   recording and click _Pair selected_, or open an item without transcript and paste one.
 
 ## Tests
 
@@ -92,3 +112,5 @@ docs/     implementation plan and decision log
 - **Integration tests fail to connect**: `docker compose up -d` must be running; the test database
   `annotation_test` is created automatically the first time the volume is initialised.
 - **Uploaded mp3/m4a shows "ffmpeg not found"**: install ffmpeg or set `FFMPEG_PATH`.
+- **Start over**: `yarn db:reset` drops the database, re-applies the migration, clears uploaded
+  files and reseeds the demo data.

@@ -56,7 +56,7 @@ Legend: `[ ]` open, `[x]` done, `[-]` cut (reason in DESIGN.md).
 ### Deliverables
 
 - [x] README: prerequisites, install, run, demo path, tests, Node version.
-- [ ] Demo path: seed script plus committed demo audio and transcripts. Seed and transcripts done; recordings pending.
+- [x] Demo path: seed script plus committed demo audio and transcripts.
 - [x] Tests: routing rule, pairing, span persistence, unit normalization.
 - [x] DESIGN.md, one page.
 
@@ -93,7 +93,7 @@ running or training a speech model, automatic pre-annotation.
 4. [x] `web`: queue, ingest and pairing, item page (player, editor, annotation, conditions),
        shortcut help, export. Unit tests for span shifting.
 5. [x] README, DESIGN.md, Playwright smoke test written.
-6. [ ] Browser verification of the UI and the smoke test; commit the demo recordings.
+6. [x] Browser verification of the UI and the smoke test; demo recordings committed.
 
 ## Testing strategy
 

@@ -21,12 +21,14 @@ export function speechRateWpm(tokens: number, durationSec: number): number | nul
 
 /**
  * Heuristic microphone-distance proxy. A speaker close to the microphone produces a hot
- * signal well above the room's noise floor; a distant one produces a weak signal with a
- * small level-to-noise ratio. This is an estimate for the annotator to confirm or override.
- * It is fooled by gain normalization and by automatic gain control.
+ * speech level well above the room's noise floor; a distant one produces a weak signal with a
+ * small level-to-noise ratio. The speech level is used rather than the whole-file RMS because
+ * the latter sinks with every pause in the dictation. This is an estimate for the annotator to
+ * confirm or override; gain normalization and automatic gain control fool it.
  */
 export function estimateDistance(levels: LevelAnalysis): DistanceEstimate {
-  if (levels.snrDb >= 30 && levels.rmsDbfs >= -25) return 'close'
-  if (levels.snrDb < 15 || levels.rmsDbfs < -40) return 'far'
+  const speechDbfs = levels.noiseFloorDbfs + levels.snrDb
+  if (levels.snrDb >= 30 && speechDbfs >= -25) return 'close'
+  if (levels.snrDb < 15 || speechDbfs < -40) return 'far'
   return 'medium'
 }

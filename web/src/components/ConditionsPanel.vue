@@ -97,9 +97,10 @@ const db = (value: number) => `${value.toFixed(1)} dBFS`
         <p class="small">
           <strong>{{ recording.distanceEstimate }}</strong>
           <span class="muted">
-            · RMS {{ db(recording.levels.rmsDbfs) }}, peak {{ db(recording.levels.peakDbfs) }},
-            noise floor {{ db(recording.levels.noiseFloorDbfs) }}, level-to-noise
-            {{ recording.levels.snrDb.toFixed(1) }} dB
+            · speech {{ db(recording.levels.noiseFloorDbfs + recording.levels.snrDb) }}, noise floor
+            {{ db(recording.levels.noiseFloorDbfs) }}, level-to-noise
+            {{ recording.levels.snrDb.toFixed(1) }} dB, RMS {{ db(recording.levels.rmsDbfs) }}, peak
+            {{ db(recording.levels.peakDbfs) }}
           </span>
         </p>
       </template>
@@ -112,8 +113,8 @@ const db = (value: number) => `${value.toFixed(1)} dBFS`
         </select>
       </label>
       <p class="muted small">
-        A heuristic, not a measurement: a speaker close to the microphone gives a hot signal far
-        above the room's noise floor. Gain normalisation and automatic gain control fool it.
+        A heuristic, not a measurement: a speaker close to the microphone gives a hot speech level
+        far above the room's noise floor. Gain normalisation and automatic gain control fool it.
       </p>
     </div>
   </div>
