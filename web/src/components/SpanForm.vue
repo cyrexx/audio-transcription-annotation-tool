@@ -13,7 +13,7 @@ import {
   type SpanInput,
   type SpanType,
 } from 'shared'
-import { computed, ref, useId, watch } from 'vue'
+import { computed, nextTick, ref, useId, useTemplateRef, watch } from 'vue'
 import type { EditorSpan } from './TranscriptEditor.vue'
 
 const props = defineProps<{
@@ -60,14 +60,23 @@ watch(
     type.value = span?.type ?? 'MEDICAL_TERM'
     attrs.value = { ...DEFAULTS[type.value], ...(span?.attributes as Attrs | undefined) }
     error.value = ''
+    focusFirstField()
   },
   { immediate: true },
 )
+
+const fields = useTemplateRef<HTMLDivElement>('fields')
+
+/** Puts the keyboard into the form, so Tab walks the attributes instead of the page behind. */
+function focusFirstField() {
+  void nextTick(() => fields.value?.querySelector<HTMLElement>('input, select')?.focus())
+}
 
 function setType(next: SpanType) {
   type.value = next
   attrs.value = { ...DEFAULTS[next] }
   error.value = ''
+  focusFirstField()
 }
 
 const normalized = computed(() => {
@@ -144,7 +153,7 @@ defineExpose({ setType })
       </button>
     </div>
 
-    <div class="fields">
+    <div ref="fields" class="fields">
       <template v-if="type === 'NUMBER'">
         <span>Rendering</span>
         <div class="row">
