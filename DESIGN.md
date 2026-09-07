@@ -67,6 +67,9 @@ hiding that it was one. `DONE` items only by default, a checkbox includes unfini
 - Annotator is a name typed once in the header and saved on the item; no accounts.
 - Speech rate uses the corrected transcript, the text that is exported.
 - Auto-rejected items are visible and playable but read-only.
+- No error rate is computed. The brief's "we compare against it to compute error rates" is read
+  as the reason the original must stay immutable; the rate itself belongs to the evaluation
+  pipeline with its own normalization rules, and the export carries both transcripts for it.
 
 ## Stack
 
