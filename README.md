@@ -92,6 +92,7 @@ first-pass transcript, and marking them is what FORMATTING_COMMAND spans are for
 ```bash
 yarn test          # unit + integration (integration needs the compose database running)
 yarn test:unit     # unit tests only
+yarn playwright install chromium   # once, before the first end-to-end run
 yarn test:e2e      # Playwright smoke test against a running `yarn dev`
 yarn typecheck && yarn lint
 ```
