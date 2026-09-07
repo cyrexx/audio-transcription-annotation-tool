@@ -84,6 +84,7 @@ test('annotates a seeded item and finds it in the export', async ({ page }) => {
   await expect(page.locator('.item')).toHaveCount(before)
   await page.getByRole('button', { name: 'Edit text' }).click()
   await textarea.fill((await textarea.inputValue()).replace('Cefuroxim', 'Cefuroxin'))
+  await page.getByPlaceholder('your name').fill('')
   await page.getByRole('button', { name: 'Reopen' }).click()
   await expect(page.locator('.badge', { hasText: 'In progress' })).toBeVisible()
 })

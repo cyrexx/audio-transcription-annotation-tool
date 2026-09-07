@@ -96,7 +96,9 @@ yarn typecheck && yarn lint
 - **Integration** (`server/test`): the Express API against the `annotation_test` database that
   the compose file creates. Upload routing, size and type rejection, pairing in both directions,
   the pairing report, span persistence and validation, export shape and override precedence.
-- **End to end**: opens the seeded queue, annotates an item and checks the export.
+- **End to end**: opens the seeded queue, annotates an item and checks the export. It edits the
+  demo item `001_leistenhernie.wav` and undoes its changes, but the item stays _In progress_;
+  `yarn db:reset` returns the demo data to a pristine state.
 
 ## Project layout
 
