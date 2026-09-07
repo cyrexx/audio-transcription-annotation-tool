@@ -33,7 +33,7 @@ NUMBER ("sechs null" meaning 6/0).
 
 ## Script 2: `002_tur_prostata.wav` (aim for 30 to 40 seconds)
 
-> Universitätsklinikum Heidelberg, Klinik für Urologie.
+> Universitätsklinikum Essen, Klinik für Urologie.
 > Transurethrale Resektion der Prostata am dritten September zweitausendsechsundzwanzig.
 > Antibiose mit Cefuroxim, ich buchstabiere: C wie Cäsar, E, F, U, R, O, X, I, M. Neue Zeile.
 > Einlage eines Dauerkatheters zwanzig Charrière Komma Spülung mit zwei Liter Kochsalzlösung. Punkt.

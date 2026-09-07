@@ -71,7 +71,7 @@ first-pass transcript, and marking them is what FORMATTING_COMMAND spans are for
    one line for the item with both transcripts, all spans and the recording conditions.
 8. Open **002_tur_prostata.wav** for the remaining type: drag from `C` to `M` in
    `C wie Caesar E F U R O X I M`, choose _SPELLED OUT_, resolved word `Cefuroxim`, click
-   _Add span_. Also mark `Universitaetsklinikum Heidelberg` as _NAMED ENTITY / organisation_ and
+   _Add span_. Also mark `Universitaetsklinikum Essen` as _NAMED ENTITY / organisation_ and
    `zwanzig Scharrier` as _MEASUREMENT_ `20` `Ch` after correcting `Scharrier` to `Charriere`.
 9. **Ingest page.** Upload `demo/transcripts-with-errors.json` under _Transcript file_ to see the
    per-row report: a duplicate path, a missing label, a missing path, a duplicate within the file,
