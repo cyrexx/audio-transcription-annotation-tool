@@ -46,16 +46,30 @@ function tokenClass(i: number) {
     nested: covering.length > 1,
     active: covering.some((s) => s.id === props.activeSpanId),
     selected: props.selection !== null && props.selection.start <= i && i < props.selection.end,
+    dragging: inDrag(i),
     'span-start': covering.some((s) => s.start === i),
     'span-end': covering.some((s) => s.end === i + 1),
   }
 }
 
 const anchor = ref<number | null>(null)
+/** Token under the pointer while dragging, so the range about to be selected is visible. */
+const hover = ref<number | null>(null)
+
+function inDrag(i: number): boolean {
+  if (anchor.value === null || hover.value === null) return false
+  return Math.min(anchor.value, hover.value) <= i && i <= Math.max(anchor.value, hover.value)
+}
+
+function startDrag(i: number) {
+  anchor.value = i
+  hover.value = i
+}
 
 function onMouseUp(i: number, event: MouseEvent) {
   const from = anchor.value
   anchor.value = null
+  hover.value = null
   if (event.shiftKey) {
     // Starts or extends a selection, also inside an existing span (a plain click would open it).
     const current = props.selection ?? { start: i, end: i + 1 }
@@ -80,13 +94,14 @@ export type { EditorSpan, Span }
     @input="emit('update:text', ($event.target as HTMLTextAreaElement).value)"
   ></textarea>
   <p v-else-if="tokens.length === 0" class="muted">The corrected transcript is empty.</p>
-  <p v-else class="tokens" @mouseleave="anchor = null">
+  <p v-else class="tokens" @mouseleave="((anchor = null), (hover = null))">
     <template v-for="(token, i) in tokens" :key="i">
       <span
         class="tok"
         :class="tokenClass(i)"
         :style="tokenStyle(i)"
-        @mousedown.prevent="anchor = i"
+        @mousedown.prevent="startDrag(i)"
+        @mouseenter="anchor !== null && (hover = i)"
         @mouseup="onMouseUp(i, $event)"
         >{{ token.text }}</span
       >{{ ' ' }}
@@ -135,6 +150,12 @@ export type { EditorSpan, Span }
 .selected {
   outline: 2px solid var(--accent);
   outline-offset: -1px;
+}
+
+.dragging {
+  outline: 2px dashed var(--accent);
+  outline-offset: -1px;
+  background: var(--accent-soft);
 }
 
 .active {
