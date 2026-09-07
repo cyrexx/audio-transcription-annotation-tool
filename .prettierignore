@@ -1,0 +1,8 @@
+node_modules
+dist
+coverage
+storage
+server/prisma/generated
+server/prisma/migrations
+yarn.lock
+CLAUDE.md
