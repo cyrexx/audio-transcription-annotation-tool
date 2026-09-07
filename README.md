@@ -22,7 +22,8 @@ See [DESIGN.md](DESIGN.md) for the data model, trade-offs and what was cut.
 git clone <this repo> && cd audio-transcription-annotation-tool
 corepack enable            # once per machine, makes `yarn` available
 docker compose up -d       # PostgreSQL on localhost:5432
-yarn setup                 # yarn install, database migration, demo seed
+yarn install               # dependencies, generates the Prisma client
+yarn setup                 # database migration and demo seed
 yarn dev                   # API on :3000, web app on http://localhost:5173
 ```
 
