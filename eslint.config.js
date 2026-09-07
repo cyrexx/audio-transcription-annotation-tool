@@ -1,6 +1,7 @@
 import js from '@eslint/js'
 import prettier from 'eslint-config-prettier'
 import vue from 'eslint-plugin-vue'
+import globals from 'globals'
 import ts from 'typescript-eslint'
 
 export default ts.config(
@@ -11,6 +12,14 @@ export default ts.config(
   {
     files: ['**/*.vue'],
     languageOptions: { parserOptions: { parser: ts.parser } },
+  },
+  {
+    files: ['web/**'],
+    languageOptions: { globals: globals.browser },
+  },
+  {
+    files: ['server/**', 'shared/**', '*.js', '*.ts'],
+    languageOptions: { globals: globals.node },
   },
   {
     rules: {
