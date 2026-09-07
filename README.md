@@ -89,7 +89,8 @@ yarn typecheck && yarn lint
 
 - **Unit** (`shared/src`, `server/src`, `web/src`): the 15-second routing rule at its boundary,
   transcript JSON validation, unit normalization, span attribute schemas, span shifting on text
-  edits, the WAV decoder and level analysis on synthesized signals. No binary fixtures.
+  edits, the WAV decoder and level analysis on synthesized signals. WAV files are synthesized in
+  memory; two 7 KB clips in `server/test/fixtures` cover mp3 and m4a.
 - **Integration** (`server/test`): the Express API against the `annotation_test` database that
   the compose file creates. Upload routing, size and type rejection, pairing in both directions,
   the pairing report, span persistence and validation, export shape and override precedence.
