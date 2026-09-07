@@ -49,10 +49,12 @@ async function seedTranscripts() {
   const report = await importTranscripts(
     await readFile(path.join(DEMO_DIR, 'transcripts.json'), 'utf8'),
   )
+  const known = report.rejected.filter((row) => row.reason.includes('already imported'))
+  const bad = report.rejected.filter((row) => !known.includes(row))
   console.log(
-    `transcripts.json: ${report.accepted.length} accepted, ${report.rejected.length} rejected`,
+    `transcripts.json: ${report.accepted.length} accepted, ${known.length} already seeded, ${bad.length} rejected`,
   )
-  for (const row of report.rejected) console.log(`  row ${row.index} (${row.path}): ${row.reason}`)
+  for (const row of bad) console.log(`  row ${row.index} (${row.path}): ${row.reason}`)
 }
 
 try {
