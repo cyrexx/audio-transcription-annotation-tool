@@ -33,7 +33,8 @@ const distanceOverride = ref<DistanceEstimate | null>(null)
 const mode = ref<'edit' | 'annotate'>('annotate')
 const selection = ref<{ start: number; end: number } | null>(null)
 const activeSpanId = ref<string | null>(null)
-const saveState = ref<'saved' | 'dirty' | 'saving' | 'error'>('saved')
+/** 'idle' until the first change of this visit, so a freshly loaded page shows no status. */
+const saveState = ref<'idle' | 'saved' | 'dirty' | 'saving' | 'error'>('idle')
 const saveError = ref('')
 const pasteText = ref('')
 const player = useTemplateRef<InstanceType<typeof AudioPlayer>>('player')
@@ -67,7 +68,7 @@ async function load() {
     distanceOverride.value = detail.distanceOverride
     item.value = detail
     lastSaved = serialized.value
-    saveState.value = 'saved'
+    saveState.value = 'idle'
   } catch (e) {
     loadError.value = (e as Error).message
   }
@@ -211,6 +212,7 @@ onUnmounted(() => {
 })
 
 const SAVE_LABELS = {
+  idle: '',
   saved: '✓ Saved',
   dirty: 'Unsaved changes',
   saving: 'Saving…',
@@ -228,6 +230,7 @@ const SAVE_LABELS = {
       <span style="flex: 1"></span>
       <template v-if="editable">
         <span
+          v-if="saveState !== 'idle'"
           class="small"
           :class="{
             error: saveState === 'error',
