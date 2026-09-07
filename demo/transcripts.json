@@ -1,0 +1,18 @@
+[
+  {
+    "path": "audio/001_leistenhernie.wav",
+    "label": "Operationsbericht Patient Klaus Mueller geboren am zwoelften Maerz neunzehnhundertsechzig Diagnose Doppelpunkt Leisten Hernie rechts neue Zeile Single-Shot-Antibiose mit Cefuroxin eintausendfuenfhundert Milligramm neue Zeile Hautschnitt in der rechten Leiste Praeparation des Samenstrangs Reposition des Bruchsacks Verschluss mit Proleen sechs null fortlaufend Absatz Blutverlust circa fuenfzig Milliliter Punkt"
+  },
+  {
+    "path": "audio/002_tur_prostata.wav",
+    "label": "Universitaetsklinikum Heidelberg Klinik fuer Neurologie transurethrale Resektion der Prostata am dritten September zweitausendsechsundzwanzig Antibiose mit Cefuroxim ich buchstabiere C wie Caesar E F U R O X I M neue Zeile Einlage eines Dauerkatheters zwanzig Scharrier Komma Spuelung mit zwei Liter Kochsalzloesung Punkt Blutdruck intraoperativ stabil bei einhundertzwanzig zu achtzig Millimeter Quecksilbersaeule auf dem Monitor erschien zeitweise nur ein Bindestrich Absatz"
+  },
+  {
+    "path": "audio/003_kurznotiz.wav",
+    "label": "Kurznotiz Patient nuechtern Praemedikation mit Midazolam siebeneinhalb Milligramm oral"
+  },
+  {
+    "path": "audio/004_nephrektomie.wav",
+    "label": "Kontrollierte Rueckenlagerung des Patienten Steriles Abwaschen und Abdecken des OP-Gebietes"
+  }
+]

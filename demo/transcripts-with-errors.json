@@ -1,0 +1,12 @@
+[
+  {
+    "path": "audio/001_leistenhernie.wav",
+    "label": "Duplicate of a path that was already imported"
+  },
+  { "path": "audio/005_missing_label.wav" },
+  { "label": "This row has no path" },
+  { "path": "audio/006_twice.wav", "label": "First of two rows with the same path" },
+  { "path": "audio/006_twice.wav", "label": "Second of two rows with the same path" },
+  "not an object",
+  { "path": "audio/007_no_audio.wav", "label": "Valid row whose audio was never uploaded" }
+]

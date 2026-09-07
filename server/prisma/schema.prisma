@@ -1,0 +1,113 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "./generated"
+  moduleFormat        = "esm"
+  importFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ItemStatus {
+  AUTO_REJECTED
+  PENDING
+  IN_PROGRESS
+  DONE
+}
+
+enum TranscriptSource {
+  FILE
+  PASTE
+}
+
+enum SpanType {
+  NUMBER
+  FORMATTING_COMMAND
+  SPELLED_OUT
+  NAMED_ENTITY
+  MEDICAL_TERM
+  MEASUREMENT
+}
+
+enum DistanceEstimate {
+  close
+  medium
+  far
+}
+
+/// One uploaded audio file and everything the annotator produces for it.
+model Item {
+  id          String     @id @default(uuid(7))
+  /// Original upload name, unique because transcripts are paired by it.
+  filename    String     @unique
+  /// Location on disk, relative to the storage directory.
+  storagePath String
+  mimeType    String
+  sizeBytes   Int
+  status      ItemStatus
+  annotator   String?
+
+  // Read from the file header on the server.
+  durationSec Float
+  sampleRate  Int?
+  channels    Int?
+  bitDepth    Int?
+  container   String?
+  codec       String?
+  /// bext and LIST INFO fields, when the recorder wrote them.
+  metadata    Json
+
+  // Signal analysis, null when it could not be computed (see levelsError).
+  rmsDbfs        Float?
+  peakDbfs       Float?
+  noiseFloorDbfs Float?
+  snrDb          Float?
+  levelsError    String?
+
+  transcript   Transcript? @relation(fields: [transcriptId], references: [id])
+  transcriptId String?     @unique
+  /// The annotator's version; starts as a copy of the transcript label.
+  correctedText String?
+  spans         Span[]
+
+  speechRateWpmOverride Float?
+  distanceOverride      DistanceEstimate?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// One row of an uploaded transcript file, or one pasted transcript. Immutable.
+model Transcript {
+  id       String           @id @default(uuid(7))
+  /// Path exactly as given in the upload, for example "audio/880_NTX.wav".
+  path     String
+  /// Basename of `path`; pairing matches it against Item.filename.
+  filename String
+  label    String
+  source   TranscriptSource
+  item     Item?
+
+  createdAt DateTime @default(now())
+
+  @@index([filename])
+}
+
+/// A typed annotation over a token range of the item's corrected text.
+model Span {
+  id         String   @id @default(uuid(7))
+  item       Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId     String
+  type       SpanType
+  /// Token index of the first token.
+  start      Int
+  /// Token index one past the last token.
+  end        Int
+  /// Type-specific attributes, validated against the shared Zod schema.
+  attributes Json
+
+  createdAt DateTime @default(now())
+
+  @@index([itemId])
+}
