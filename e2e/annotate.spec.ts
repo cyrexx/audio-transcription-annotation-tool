@@ -43,6 +43,11 @@ test('annotates a seeded item and finds it in the export', async ({ page }) => {
   await to.hover()
   await page.mouse.up()
   await expect(page.getByText('Edit span', { exact: true })).toBeVisible()
+  // Boundaries move one word at a time and come back.
+  await page.getByTitle('Include the previous word').click()
+  await expect(spansWith(/^Cefuroxin eintausendfuenfhundert Milligramm$/)).toHaveCount(1)
+  await page.getByTitle('Drop the first word').click()
+  await expect(spansWith(/^eintausendfuenfhundert Milligramm$/)).toHaveCount(1)
   await page.getByRole('button', { name: 'Cancel' }).click()
 
   // Shift-click inside the measurement starts a nested span.

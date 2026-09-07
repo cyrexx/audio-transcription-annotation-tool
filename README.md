@@ -66,6 +66,8 @@ first-pass transcript, and marking them is what FORMATTING_COMMAND spans are for
    - Drag from `Klaus` to `Mueller`. Choose _NAMED ENTITY_, kind _person_. Click _Add span_.
    - **Edit a span:** click `Cefuroxim` again, change the note, click _Update_. Dragging exactly
      over a span's words, for example `Klaus` to `Mueller` again, opens that span as well.
+     **Resize a span:** with `Klaus Mueller` open, the _Start_ and _End_ arrows move each
+     boundary one word at a time; drop `Klaus` to keep only the last name, then add it back.
      **Delete a span:** open it either way, or pick it from the _Spans_ list, then click _Delete_.
 6. **Recording conditions** (right column). Header facts, the derived speech rate and the distance
    estimate with its level figures. Type `120` into the speech-rate _Override_ and pick `medium`

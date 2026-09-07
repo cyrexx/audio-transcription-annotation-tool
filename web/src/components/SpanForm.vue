@@ -21,9 +21,20 @@ const props = defineProps<{
   selectionText: string
   /** Set when editing an existing span; null when creating one for the selection. */
   span: EditorSpan | null
+  tokenCount: number
 }>()
 
-const emit = defineEmits<{ save: [span: SpanInput]; delete: []; cancel: [] }>()
+const emit = defineEmits<{
+  save: [span: SpanInput]
+  delete: []
+  cancel: []
+  /** Moves an existing span's boundaries; applied immediately so the highlight follows. */
+  resize: [start: number, end: number]
+}>()
+
+const single = computed(() => props.selection.end - props.selection.start <= 1)
+const resize = (dStart: number, dEnd: number) =>
+  emit('resize', props.selection.start + dStart, props.selection.end + dEnd)
 
 type Attrs = Record<string, string | number | null>
 
@@ -84,6 +95,33 @@ const label = (value: string) => value.replaceAll('_', ' ')
       <span class="muted small">
         tokens {{ selection.start }}–{{ selection.end - 1 }}: „{{ selectionText }}“
       </span>
+    </div>
+
+    <div v-if="span" class="row small resize">
+      <span class="muted">Start</span>
+      <button
+        type="button"
+        title="Include the previous word"
+        :disabled="selection.start === 0"
+        @click="resize(-1, 0)"
+      >
+        ◀
+      </button>
+      <button type="button" title="Drop the first word" :disabled="single" @click="resize(1, 0)">
+        ▶
+      </button>
+      <span class="muted">End</span>
+      <button type="button" title="Drop the last word" :disabled="single" @click="resize(0, -1)">
+        ◀
+      </button>
+      <button
+        type="button"
+        title="Include the next word"
+        :disabled="selection.end >= tokenCount"
+        @click="resize(0, 1)"
+      >
+        ▶
+      </button>
     </div>
 
     <div class="types">
@@ -185,6 +223,15 @@ const label = (value: string) => value.replaceAll('_', ' ')
 .type-btn.chosen {
   background: var(--c);
   color: #fff;
+}
+
+.resize button {
+  padding: 0.1rem 0.5rem;
+  font-size: 0.7rem;
+}
+
+.resize .muted:not(:first-child) {
+  margin-left: 0.5rem;
 }
 
 .fields {

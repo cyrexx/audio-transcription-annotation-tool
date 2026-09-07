@@ -80,7 +80,8 @@ No deviations. Yarn 4 via corepack, Prisma 7.10 pinned (npm `latest` is an 8.0 R
 
 ## Cut for time, and next
 
-- Resizing a span means delete and recreate; a drag handle on the highlight is the next step.
+- Span boundaries move one word at a time from the form; drag handles on the highlight would be
+  the next step.
 - Number keys to pick the span type after selecting, and a waveform under the seek bar.
 - Deleting items, server-side paging, a production build served by Express.
 - If the model ever emits word timings, the transcript schema can carry them and replace the

@@ -154,6 +154,10 @@ function saveSpan(input: SpanInput) {
   clearSelection()
 }
 
+function resizeSpan(start: number, end: number) {
+  spans.value = spans.value.map((s) => (s.id === activeSpanId.value ? { ...s, start, end } : s))
+}
+
 function deleteSpan() {
   spans.value = spans.value.filter((s) => s.id !== activeSpanId.value)
   clearSelection()
@@ -330,8 +334,10 @@ const SAVE_LABELS = {
             :selection="formSelection"
             :selection-text="selectionText"
             :span="activeSpan"
+            :token-count="tokens.length"
             @save="saveSpan"
             @delete="deleteSpan"
+            @resize="resizeSpan"
             @cancel="clearSelection"
           />
           <p v-else class="muted small">
