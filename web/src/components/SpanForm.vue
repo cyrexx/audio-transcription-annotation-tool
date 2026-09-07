@@ -13,7 +13,7 @@ import {
   type SpanInput,
   type SpanType,
 } from 'shared'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, useId, watch } from 'vue'
 import type { EditorSpan } from './TranscriptEditor.vue'
 
 const props = defineProps<{
@@ -31,6 +31,9 @@ const emit = defineEmits<{
   /** Moves an existing span's boundaries; applied immediately so the highlight follows. */
   resize: [start: number, end: number]
 }>()
+
+/** Unique prefix so every label points at its own control. */
+const uid = useId()
 
 const single = computed(() => props.selection.end - props.selection.start <= 1)
 const resize = (dStart: number, dEnd: number) =>
@@ -140,22 +143,22 @@ const label = (value: string) => value.replaceAll('_', ' ')
 
     <div class="fields">
       <template v-if="type === 'NUMBER'">
-        <label>Rendering</label>
+        <span>Rendering</span>
         <div class="row">
           <label v-for="r in NUMBER_RENDERINGS" :key="r" class="row"
             ><input v-model="attrs.rendering" type="radio" :value="r" />{{ r }}</label
           >
         </div>
-        <label>Normalized value</label>
-        <input v-model="attrs.value" type="text" placeholder="12, 6/0, 2026" />
+        <label :for="`${uid}-value`">Normalized value</label>
+        <input :id="`${uid}-value`" v-model="attrs.value" type="text" placeholder="12, 6/0, 2026" />
       </template>
 
       <template v-else-if="type === 'FORMATTING_COMMAND'">
-        <label>Command</label>
-        <select v-model="attrs.command">
+        <label :for="`${uid}-command`">Command</label>
+        <select :id="`${uid}-command`" v-model="attrs.command">
           <option v-for="c in FORMATTING_COMMANDS" :key="c" :value="c">{{ label(c) }}</option>
         </select>
-        <label>Meaning</label>
+        <span>Meaning</span>
         <div class="row">
           <label v-for="i in FORMATTING_INTERPRETATIONS" :key="i" class="row"
             ><input v-model="attrs.interpretation" type="radio" :value="i" />{{ i }}</label
@@ -164,34 +167,45 @@ const label = (value: string) => value.replaceAll('_', ' ')
       </template>
 
       <template v-else-if="type === 'SPELLED_OUT'">
-        <label>Resolved word</label>
-        <input v-model="attrs.resolved" type="text" placeholder="Cefuroxim" />
+        <label :for="`${uid}-resolved`">Resolved word</label>
+        <input
+          :id="`${uid}-resolved`"
+          v-model="attrs.resolved"
+          type="text"
+          placeholder="Cefuroxim"
+        />
       </template>
 
       <template v-else-if="type === 'NAMED_ENTITY'">
-        <label>Kind</label>
-        <select v-model="attrs.kind">
+        <label :for="`${uid}-kind`">Kind</label>
+        <select :id="`${uid}-kind`" v-model="attrs.kind">
           <option v-for="k in ENTITY_KINDS" :key="k" :value="k">{{ k }}</option>
         </select>
       </template>
 
       <template v-else-if="type === 'MEDICAL_TERM'">
-        <label>Category</label>
-        <select v-model="attrs.category">
+        <label :for="`${uid}-category`">Category</label>
+        <select :id="`${uid}-category`" v-model="attrs.category">
           <option v-for="c in MEDICAL_CATEGORIES" :key="c" :value="c">{{ c }}</option>
         </select>
-        <label>Note</label>
-        <input v-model="attrs.note" type="text" placeholder="optional" />
+        <label :for="`${uid}-note`">Note</label>
+        <input :id="`${uid}-note`" v-model="attrs.note" type="text" placeholder="optional" />
       </template>
 
       <template v-else-if="type === 'MEASUREMENT'">
-        <label>Value</label>
-        <input v-model.number="attrs.value" type="number" step="any" placeholder="1500" />
-        <label>Unit</label>
-        <select v-model="attrs.unit">
+        <label :for="`${uid}-measure`">Value</label>
+        <input
+          :id="`${uid}-measure`"
+          v-model.number="attrs.value"
+          type="number"
+          step="any"
+          placeholder="1500"
+        />
+        <label :for="`${uid}-unit`">Unit</label>
+        <select :id="`${uid}-unit`" v-model="attrs.unit">
           <option v-for="u in MEASUREMENT_UNITS" :key="u" :value="u">{{ u }}</option>
         </select>
-        <label>Normalized</label>
+        <span>Normalized</span>
         <span class="muted">{{
           normalized ? `${normalized.normalizedValue} ${normalized.normalizedUnit}` : '—'
         }}</span>
@@ -241,7 +255,8 @@ const label = (value: string) => value.replaceAll('_', ' ')
   align-items: center;
 }
 
-.fields > label {
+.fields > label,
+.fields > span:not(.muted) {
   color: var(--muted);
   font-size: 0.85rem;
 }
