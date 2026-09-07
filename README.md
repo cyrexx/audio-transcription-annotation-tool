@@ -52,7 +52,8 @@ first-pass transcript, and marking them is what FORMATTING_COMMAND spans are for
    to return. There is no save button: every change is saved about a second after you make it,
    and the header goes from _Unsaved changes_ to _✓ Saved_ (usually too fast to notice).
    **Ctrl+S** saves immediately.
-5. **Add spans** (in _Annotate_ mode; the form appears on the right after each selection):
+5. **Add spans** (in _Annotate_ mode; the form appears on the right after each selection. The
+   type can also be chosen with **Alt+1** to **Alt+6**, _Enter_ submits, _Esc_ closes the form):
    - Click `Cefuroxim`. Choose _MEDICAL TERM_, category _drug_, note `Single-Shot-Antibiose`.
      Click _Add span_.
    - Drag from `eintausendfuenfhundert` to `Milligramm`. Choose _MEASUREMENT_, value `1500`,

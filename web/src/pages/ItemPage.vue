@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  SPAN_TYPES,
   tokenize,
   type AnnotationUpdate,
   type DistanceEstimate,
@@ -16,7 +17,7 @@ import TranscriptEditor, { type EditorSpan } from '../components/TranscriptEdito
 import { useAnnotatorName } from '../lib/annotatorName.ts'
 import { api } from '../lib/api.ts'
 import { STATUS_LABELS } from '../lib/format.ts'
-import { matchShortcut, JUMP_FAR_SEC, JUMP_SEC } from '../lib/shortcuts.ts'
+import { matchShortcut, matchSpanType, JUMP_FAR_SEC, JUMP_SEC } from '../lib/shortcuts.ts'
 import { shiftSpans } from '../lib/spanShift.ts'
 import { estimateTokenTime } from '../lib/timestamps.ts'
 
@@ -38,6 +39,7 @@ const saveState = ref<'idle' | 'saved' | 'dirty' | 'saving' | 'error'>('idle')
 const saveError = ref('')
 const pasteText = ref('')
 const player = useTemplateRef<InstanceType<typeof AudioPlayer>>('player')
+const spanForm = useTemplateRef<InstanceType<typeof SpanForm>>('spanForm')
 const annotator = useAnnotatorName()
 
 const tokens = computed(() => tokenize(text.value))
@@ -194,6 +196,19 @@ async function unpair() {
 // Keyboard ------------------------------------------------------------------------------
 
 function onKeydown(event: KeyboardEvent) {
+  if (formSelection.value && editable.value) {
+    const typeIndex = matchSpanType(event)
+    if (typeIndex !== null) {
+      event.preventDefault()
+      spanForm.value?.setType(SPAN_TYPES[typeIndex])
+      return
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      clearSelection()
+      return
+    }
+  }
   const action = matchShortcut(event)
   if (!action) return
   event.preventDefault()
@@ -331,6 +346,7 @@ const SAVE_LABELS = {
         <section v-if="item.transcript" class="panel">
           <SpanForm
             v-if="formSelection && editable"
+            ref="spanForm"
             :selection="formSelection"
             :selection-text="selectionText"
             :span="activeSpan"

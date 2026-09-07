@@ -89,6 +89,8 @@ function save() {
 }
 
 const label = (value: string) => value.replaceAll('_', ' ')
+
+defineExpose({ setType })
 </script>
 
 <template>
@@ -129,12 +131,13 @@ const label = (value: string) => value.replaceAll('_', ' ')
 
     <div class="types">
       <button
-        v-for="t in SPAN_TYPES"
+        v-for="(t, index) in SPAN_TYPES"
         :key="t"
         type="button"
         class="type-btn"
         :class="{ chosen: t === type }"
         :style="{ '--c': `var(--type-${t})` }"
+        :title="`Alt+${index + 1}`"
         @click="setType(t)"
       >
         {{ label(t) }}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { matchShortcut } from './shortcuts.ts'
+import { matchShortcut, matchSpanType } from './shortcuts.ts'
 
 const key = (code: string, mods: Partial<KeyboardEvent> = {}) =>
   ({ code, altKey: false, shiftKey: false, ctrlKey: false, ...mods }) as KeyboardEvent
@@ -16,5 +16,18 @@ describe('matchShortcut', () => {
     expect(matchShortcut(key('KeyK'))).toBeNull()
     expect(matchShortcut(key('KeyJ', { shiftKey: true }))).toBeNull()
     expect(matchShortcut(key('Comma'))).toBeNull()
+  })
+})
+
+describe('matchSpanType', () => {
+  it('maps Alt+1 to Alt+6 onto the type buttons', () => {
+    expect(matchSpanType(key('Digit1', { altKey: true }))).toBe(0)
+    expect(matchSpanType(key('Digit6', { altKey: true }))).toBe(5)
+  })
+
+  it('leaves plain digits alone so values can be typed', () => {
+    expect(matchSpanType(key('Digit1'))).toBeNull()
+    expect(matchSpanType(key('Digit7', { altKey: true }))).toBeNull()
+    expect(matchSpanType(key('Digit1', { altKey: true, shiftKey: true }))).toBeNull()
   })
 })

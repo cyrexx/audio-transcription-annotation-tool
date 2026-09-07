@@ -46,6 +46,20 @@ export const SHORTCUTS: Shortcut[] = [
   define('save', 'Ctrl+S', 'KeyS', 'Save now'),
 ]
 
+/** Keys that act inside the span form; matched in the item page, listed here for the help panel. */
+export const FORM_SHORTCUTS = [
+  { keys: 'Alt+1 … Alt+6', label: 'Choose the span type, in the order of the buttons' },
+  { keys: 'Enter', label: 'Add or update the span' },
+  { keys: 'Esc', label: 'Close the span form' },
+]
+
+/** Span type index (0-based) for Alt+1 … Alt+6, or null. */
+export function matchSpanType(event: KeyboardEvent): number | null {
+  const digit = /^Digit([1-6])$/.exec(event.code)
+  if (!digit || !event.altKey || event.shiftKey || event.ctrlKey) return null
+  return Number(digit[1]) - 1
+}
+
 export function matchShortcut(event: KeyboardEvent): PlayerAction | null {
   const hit = SHORTCUTS.find(
     (s) =>

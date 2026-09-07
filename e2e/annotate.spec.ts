@@ -58,12 +58,13 @@ test('annotates a seeded item and finds it in the export', async ({ page }) => {
   await expect(spansWith(new RegExp(`^${wordBefore} fuenfzig Milliliter$`))).toHaveCount(1)
   await page.getByTitle('Drop the first word').click()
   await expect(spansWith(/^fuenfzig Milliliter$/)).toHaveCount(1)
-  await page.getByRole('button', { name: 'Cancel' }).click()
+  await page.keyboard.press('Escape')
+  await expect(page.getByText('Edit span', { exact: true })).toBeHidden()
 
   // Shift-click inside the measurement starts a nested span.
   await from.click({ modifiers: ['Shift'] })
   await expect(page.getByText('New span', { exact: true })).toBeVisible()
-  await page.getByRole('button', { name: 'NUMBER' }).click()
+  await page.keyboard.press('Alt+Digit1') // NUMBER
   await page.getByPlaceholder('12, 6/0, 2026').fill('50')
   await page.getByRole('button', { name: 'Add span' }).click()
   await expect(page.locator('.item')).toHaveCount(before + 2)
