@@ -122,8 +122,9 @@ docs/     implementation plan and decision log
 - **Port 5432 already in use**: stop the other PostgreSQL, or change the host port in
   `docker-compose.yml` and set `DATABASE_URL` in `server/.env` to match.
 - **`yarn: command not found`**: run `corepack enable` (Node 22 ships corepack).
-- **Integration tests fail to connect**: `docker compose up -d` must be running; the test database
-  `annotation_test` is created automatically the first time the volume is initialised.
+- **"Can't reach database server" during `yarn setup` or the tests**: `docker compose up -d` must be
+  running; the test database `annotation_test` is created automatically the first time the volume
+  is initialised.
 - **Uploaded mp3/m4a shows "ffmpeg not found"**: install ffmpeg or set `FFMPEG_PATH`.
 - **Start over**: `yarn db:reset` drops the database, re-applies the migration, clears uploaded
   files and reseeds the demo data.
