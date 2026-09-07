@@ -23,10 +23,11 @@ same shared function on save.
 tokenization is deterministic and shared; selection is click, drag or shift-click on words; the
 export adds character offsets and the covered text so consumers need no tokenizer.
 
-**Spans follow text edits.** A textarea edit is one contiguous change, so old and new token lists
-share a prefix and suffix. Spans before it stay, after it shift, overlapping it stretch to cover the
-edited words, empty ones drop. Text and spans are saved together in one `PUT`, so the server can
-reject a span that runs past the text.
+**Spans follow text edits.** Old and new token lists are diffed into hunks (common prefix and
+suffix, then a longest common subsequence over the rest), so a keystroke is one tiny hunk and a
+pasted paragraph is one hunk per changed place. Spans before a hunk stay, after it shift,
+overlapping it stretch to cover the edited words, empty ones drop. Text and spans are saved together
+in one `PUT`, so the server can reject a span that runs past the text.
 
 **Overlapping spans are supported.** A NUMBER inside a MEASUREMENT or a SPELLED_OUT inside a
 NAMED_ENTITY are real cases. Ranges are independent; a word is coloured by its innermost span and
