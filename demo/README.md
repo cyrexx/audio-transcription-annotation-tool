@@ -12,7 +12,11 @@ sees the tool populated within a minute of starting it.
 | `transcripts-with-errors.json` | Upload this by hand on the Ingest page to see the validation report                   |
 
 The recordings are read by a human speaker from the scripts below. Both long clips are
-written so that every annotation type occurs at least once.
+written so that every annotation type occurs at least once. The punctuation in the scripts is
+only there for the reader: the speaker dictates "Punkt", "Komma", "Doppelpunkt", "neue Zeile" and
+"Absatz" as words, and the model transcripts in `transcripts.json` contain them as words and no
+punctuation at all, exactly like real first-pass output. Turning those words into layout is what
+FORMATTING_COMMAND spans record.
 
 ## Script 1: `001_leistenhernie.wav` (aim for 25 to 35 seconds)
 

@@ -35,7 +35,9 @@ the upload limit.
 
 `yarn setup` seeds the demo recordings from `demo/` through the real ingest code, so the queue is
 populated on first start. Every step below names the exact value to enter; the transcript in
-`demo/transcripts.json` contains deliberate recognition errors for you to correct.
+`demo/transcripts.json` contains deliberate recognition errors for you to correct. It has no
+punctuation on purpose: dictated commands such as "Punkt" or "neue Zeile" arrive as words in a
+first-pass transcript, and marking them is what FORMATTING_COMMAND spans are for.
 
 1. **Queue** (home page). Three items: two over 15 s are _Pending_, `003_kurznotiz.wav` is under
    15 s and _Auto-rejected_. Choose _Pending_ in the _Status_ filter, then click the _Duration_
