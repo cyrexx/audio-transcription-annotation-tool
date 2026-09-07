@@ -211,7 +211,7 @@ onUnmounted(() => {
 })
 
 const SAVE_LABELS = {
-  saved: 'Saved',
+  saved: '✓ Saved',
   dirty: 'Unsaved changes',
   saving: 'Saving…',
   error: 'Save failed',
@@ -227,7 +227,14 @@ const SAVE_LABELS = {
       <span class="badge" :class="item.status">{{ STATUS_LABELS[item.status] }}</span>
       <span style="flex: 1"></span>
       <template v-if="editable">
-        <span class="small" :class="{ error: saveState === 'error', muted: saveState !== 'error' }">
+        <span
+          class="small"
+          :class="{
+            error: saveState === 'error',
+            ok: saveState === 'saved',
+            muted: saveState === 'dirty' || saveState === 'saving',
+          }"
+        >
           {{ SAVE_LABELS[saveState] }}<span v-if="saveState === 'error'">: {{ saveError }}</span>
         </span>
         <button v-if="item.status === 'DONE'" @click="save('IN_PROGRESS')">Reopen</button>

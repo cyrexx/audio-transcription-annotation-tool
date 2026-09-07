@@ -53,7 +53,7 @@ test('annotates a seeded item and finds it in the export', async ({ page }) => {
   await expect(page.locator('.item')).toHaveCount(before + 2)
   await expect(spansWith(/^eintausendfuenfhundert$/)).toHaveCount(numbersBefore + 1)
 
-  await expect(page.getByText('Saved', { exact: true })).toBeVisible()
+  await expect(page.getByText('✓ Saved')).toBeVisible()
   await page.getByRole('button', { name: 'Mark done' }).click()
   await expect(page.locator('.badge', { hasText: 'Done' })).toBeVisible()
 
