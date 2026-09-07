@@ -15,5 +15,6 @@ storage-test/
 server/prisma/generated/
 test-results/
 playwright-report/
+.playwright/
 .DS_Store
 *.log

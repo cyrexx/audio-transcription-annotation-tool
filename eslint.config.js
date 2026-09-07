@@ -18,7 +18,7 @@ export default ts.config(
     languageOptions: { globals: globals.browser },
   },
   {
-    files: ['server/**', 'shared/**', '*.js', '*.ts'],
+    files: ['server/**', 'shared/**', 'e2e/**', '*.js', '*.ts'],
     languageOptions: { globals: globals.node },
   },
   {

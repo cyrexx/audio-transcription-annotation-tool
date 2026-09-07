@@ -9,56 +9,56 @@ Legend: `[ ]` open, `[x]` done, `[-]` cut (reason in DESIGN.md).
 
 ### Ingest
 
-- [ ] Audio upload: `.wav`, `.mp3`, `.m4a`; single or multiple files; type validated by parsing
+- [x] Audio upload: `.wav`, `.mp3`, `.m4a`; single or multiple files; type validated by parsing
       the file, not by extension; size limit; clear per-file accept/reject.
-- [ ] Files stored on disk, database stores a reference.
-- [ ] Transcript upload: JSON array of `{ path, label }`.
-- [ ] Paste a transcript for one item in the UI.
-- [ ] Pairing by filename; unmatched shown on both sides; manual pair and unpair.
-- [ ] Bad input reported per row (malformed JSON, missing fields, duplicate paths,
+- [x] Files stored on disk, database stores a reference.
+- [x] Transcript upload: JSON array of `{ path, label }`.
+- [x] Paste a transcript for one item in the UI.
+- [x] Pairing by filename; unmatched shown on both sides; manual pair and unpair.
+- [x] Bad input reported per row (malformed JSON, missing fields, duplicate paths,
       audio without transcript, transcript without audio); good rows kept.
 
 ### Work queue
 
-- [ ] List with filename, duration, status, annotator.
-- [ ] Duration read server-side from the file.
-- [ ] Filter and sort by status and duration.
-- [ ] Routing rule: duration > 15 s goes to a human, 15 s and under is auto-rejected.
+- [x] List with filename, duration, status, annotator.
+- [x] Duration read server-side from the file.
+- [x] Filter and sort by status and duration.
+- [x] Routing rule: duration > 15 s goes to a human, 15 s and under is auto-rejected.
 
 ### Audio player
 
-- [ ] Play/pause, seek, playback speed, jump back/forward.
-- [ ] Keyboard shortcuts for all of the above, documented in the UI.
-- [ ] Click a word to jump to its (estimated) timestamp.
+- [x] Play/pause, seek, playback speed, jump back/forward.
+- [x] Keyboard shortcuts for all of the above, documented in the UI.
+- [x] Click a word to jump to its (estimated) timestamp.
 
 ### Transcript editing
 
-- [ ] Original transcript immutable; corrected transcript stored separately and freely editable.
+- [x] Original transcript immutable; corrected transcript stored separately and freely editable.
 
 ### Annotation
 
-- [ ] Spans with type and typed attributes; create, edit, delete.
-- [ ] NUMBER, FORMATTING_COMMAND, SPELLED_OUT, NAMED_ENTITY, MEDICAL_TERM, MEASUREMENT.
-- [ ] Overlapping spans supported (decision below).
+- [x] Spans with type and typed attributes; create, edit, delete.
+- [x] NUMBER, FORMATTING_COMMAND, SPELLED_OUT, NAMED_ENTITY, MEDICAL_TERM, MEASUREMENT.
+- [x] Overlapping spans supported (decision below).
 
 ### Recording conditions
 
-- [ ] Header facts: duration, sample rate, channels, bit depth, bext and LIST INFO metadata.
-- [ ] Derived speech rate in words per minute.
-- [ ] Derived distance estimate from signal level, labelled as an estimate.
-- [ ] Both derived values overridable; override is what gets exported.
+- [x] Header facts: duration, sample rate, channels, bit depth, bext and LIST INFO metadata.
+- [x] Derived speech rate in words per minute.
+- [x] Derived distance estimate from signal level, labelled as an estimate.
+- [x] Both derived values overridable; override is what gets exported.
 
 ### Export
 
-- [ ] JSONL, one item per line: audio reference, original, corrected, spans with attributes,
+- [x] JSONL, one item per line: audio reference, original, corrected, spans with attributes,
       recording-condition values.
 
 ### Deliverables
 
-- [ ] README: prerequisites, install, run, demo path, tests, Node version.
-- [ ] Demo path: seed script plus committed demo audio and transcripts.
-- [ ] Tests: routing rule, pairing, span persistence, unit normalization.
-- [ ] DESIGN.md, one page.
+- [x] README: prerequisites, install, run, demo path, tests, Node version.
+- [ ] Demo path: seed script plus committed demo audio and transcripts. Seed and transcripts done; recordings pending.
+- [x] Tests: routing rule, pairing, span persistence, unit normalization.
+- [x] DESIGN.md, one page.
 
 ### Explicitly out of scope
 
@@ -86,13 +86,14 @@ running or training a speech model, automatic pre-annotation.
 
 ## Milestones
 
-1. Scaffold: workspaces, lint, format, compose, plan, demo scripts.
-2. `shared`: tokenizer, routing rule, unit normalization, annotation schemas, API types. Unit tests.
-3. `server`: Prisma schema and migration; audio analysis; ingest, pairing, queue, annotation,
-   export routes; seed. Unit and integration tests.
-4. `web`: queue, ingest and pairing, item page (player, editor, annotation, conditions),
-   shortcut help, export. Unit tests for span shifting.
-5. README, DESIGN.md, Playwright smoke test.
+1. [x] Scaffold: workspaces, lint, format, compose, plan, demo scripts.
+2. [x] `shared`: tokenizer, routing rule, unit normalization, annotation schemas, API types. Unit tests.
+3. [x] `server`: Prisma schema and migration; audio analysis; ingest, pairing, queue, annotation,
+       export routes; seed. Unit and integration tests.
+4. [x] `web`: queue, ingest and pairing, item page (player, editor, annotation, conditions),
+       shortcut help, export. Unit tests for span shifting.
+5. [x] README, DESIGN.md, Playwright smoke test written.
+6. [ ] Browser verification of the UI and the smoke test; commit the demo recordings.
 
 ## Testing strategy
 
