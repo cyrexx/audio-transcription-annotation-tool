@@ -64,7 +64,9 @@ hiding that it was one. `DONE` items only by default, a checkbox includes unfini
 - Duplicate paths: first row wins, later ones are rejected with the row number, also across
   imports. Matching is by exact basename.
 - Unpairing discards corrected text and spans, since they referred to that transcript.
-- Annotator is a name typed once in the header and saved on the item; no accounts.
+- Annotator is a name typed once in the header and saved on the item; no accounts. It is
+  provenance for the export, not a permission: editing works without it, and the item page only
+  points out when it is missing.
 - Speech rate uses the corrected transcript, the text that is exported.
 - Auto-rejected items are visible and playable but read-only.
 - No error rate is computed. The brief's "we compare against it to compute error rates" is read
