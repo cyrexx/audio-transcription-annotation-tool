@@ -233,6 +233,7 @@ const SAVE_LABELS = {
       <span class="badge" :class="item.status">{{ STATUS_LABELS[item.status] }}</span>
       <span style="flex: 1"></span>
       <template v-if="editable">
+        <span v-if="!annotator.trim()" class="small muted">No annotator name set (top right)</span>
         <span
           v-if="saveState !== 'idle'"
           class="small"
