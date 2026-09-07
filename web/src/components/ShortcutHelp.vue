@@ -32,7 +32,7 @@ import { SHORTCUTS } from '../lib/shortcuts.ts'
           </tr>
           <tr>
             <td>Shift + click</td>
-            <td>Extend the selection</td>
+            <td>Start or extend a selection, also inside an existing span (for nested spans)</td>
           </tr>
         </tbody>
       </table>

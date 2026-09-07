@@ -56,8 +56,10 @@ const anchor = ref<number | null>(null)
 function onMouseUp(i: number, event: MouseEvent) {
   const from = anchor.value
   anchor.value = null
-  if (event.shiftKey && props.selection) {
-    emit('select', Math.min(props.selection.start, i), Math.max(props.selection.end, i + 1))
+  if (event.shiftKey) {
+    // Starts or extends a selection, also inside an existing span (a plain click would open it).
+    const current = props.selection ?? { start: i, end: i + 1 }
+    emit('select', Math.min(current.start, i), Math.max(current.end, i + 1))
   } else if (from === null || from === i) {
     emit('tokenClick', i)
   } else {
