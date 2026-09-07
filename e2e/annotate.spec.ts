@@ -37,6 +37,14 @@ test('annotates a seeded item and finds it in the export', async ({ page }) => {
   await page.getByRole('button', { name: 'Add span' }).click()
   await expect(page.locator('.item')).toHaveCount(before + 1)
 
+  // Dragging over exactly those words again opens the span instead of offering a duplicate.
+  await from.hover()
+  await page.mouse.down()
+  await to.hover()
+  await page.mouse.up()
+  await expect(page.getByText('Edit span', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Cancel' }).click()
+
   // Shift-click inside the measurement starts a nested span.
   await from.click({ modifiers: ['Shift'] })
   await expect(page.getByText('New span', { exact: true })).toBeVisible()

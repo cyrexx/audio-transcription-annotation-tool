@@ -16,7 +16,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:text': [text: string]
   tokenClick: [index: number]
-  select: [start: number, end: number]
+  /** `forceNew` is set for shift-click, which always starts a fresh span even over an existing one. */
+  select: [start: number, end: number, forceNew: boolean]
 }>()
 
 const tokens = computed(() => tokenize(props.text))
@@ -73,11 +74,11 @@ function onMouseUp(i: number, event: MouseEvent) {
   if (event.shiftKey) {
     // Starts or extends a selection, also inside an existing span (a plain click would open it).
     const current = props.selection ?? { start: i, end: i + 1 }
-    emit('select', Math.min(current.start, i), Math.max(current.end, i + 1))
+    emit('select', Math.min(current.start, i), Math.max(current.end, i + 1), true)
   } else if (from === null || from === i) {
     emit('tokenClick', i)
   } else {
-    emit('select', Math.min(from, i), Math.max(from, i) + 1)
+    emit('select', Math.min(from, i), Math.max(from, i) + 1, false)
   }
 }
 

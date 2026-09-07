@@ -136,9 +136,13 @@ function onTokenClick(index: number) {
   selection.value = covering[0] ? null : { start: index, end: index + 1 }
 }
 
-function onSelect(start: number, end: number) {
-  selection.value = { start, end }
-  activeSpanId.value = null
+/** Dragging exactly over an existing span opens it instead of offering a duplicate. */
+function onSelect(start: number, end: number, forceNew: boolean) {
+  const existing = forceNew
+    ? undefined
+    : spans.value.find((s) => s.start === start && s.end === end)
+  activeSpanId.value = existing?.id ?? null
+  selection.value = existing ? null : { start, end }
 }
 
 function saveSpan(input: SpanInput) {

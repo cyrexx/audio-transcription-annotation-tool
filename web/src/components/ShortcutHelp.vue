@@ -28,11 +28,13 @@ import { SHORTCUTS } from '../lib/shortcuts.ts'
           </tr>
           <tr>
             <td>Drag across words</td>
-            <td>Select a range for a new span</td>
+            <td>Select a range for a new span; dragging exactly over an existing span opens it</td>
           </tr>
           <tr>
             <td>Shift + click</td>
-            <td>Start or extend a selection, also inside an existing span (for nested spans)</td>
+            <td>
+              Start or extend a selection for a new span, even over words that already have one
+            </td>
           </tr>
         </tbody>
       </table>
