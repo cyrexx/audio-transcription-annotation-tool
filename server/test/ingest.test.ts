@@ -88,6 +88,27 @@ describe('POST /api/audio', () => {
     expect(await prisma.item.count()).toBe(0)
   })
 
+  it('answers malformed multipart bodies with 400, not 500', async () => {
+    const boundary = 'x'
+    const body = Buffer.concat([
+      Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="a\u0000.wav"\r\n\r\n`),
+      synthWav({ seconds: 0.1 }),
+      Buffer.from(`\r\n--${boundary}--\r\n`),
+    ])
+    const res = await api()
+      .post('/api/audio')
+      .set('Content-Type', `multipart/form-data; boundary=${boundary}`)
+      .send(body)
+      .expect(400)
+    expect(res.body.error).toMatch(/Upload rejected/)
+    expect(await prisma.item.count()).toBe(0)
+  })
+
+  it('answers a wrong multipart field name with 400', async () => {
+    const res = await api().post('/api/audio').attach('audio', synthWav({ seconds: 0.1 }), 'a.wav').expect(400)
+    expect(res.body.error).toMatch(/Upload rejected: Unexpected field/)
+  })
+
   it('rejects unsupported extensions before storing anything', async () => {
     const res = await api()
       .post('/api/audio')

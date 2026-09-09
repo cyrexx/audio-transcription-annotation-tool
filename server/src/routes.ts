@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import path from 'node:path'
-import { Router } from 'express'
-import multer from 'multer'
+import { Router, type RequestHandler } from 'express'
+import multer, { MulterError } from 'multer'
 import { annotationUpdateSchema } from 'shared'
 import { z } from 'zod'
 import { AUDIO_EXTENSIONS } from './audio/analyze.ts'
@@ -34,11 +34,26 @@ const upload = multer({
   },
 })
 
+/** Every multipart parsing failure is the client's, so it answers 4xx with the parser's reason. */
+const uploadOne: RequestHandler = (req, res, next) =>
+  upload.single('file')(req, res, (err: unknown) => {
+    if (!err || err instanceof HttpError) return next(err)
+    if (err instanceof MulterError && err.code === 'LIMIT_FILE_SIZE') {
+      return next(
+        new HttpError(
+          413,
+          `File exceeds the ${config.maxUploadBytes / 1024 / 1024} MB upload limit`,
+        ),
+      )
+    }
+    next(new HttpError(400, `Upload rejected: ${(err as Error).message}`))
+  })
+
 export const api = Router()
 
 // Ingest -------------------------------------------------------------------------------
 
-api.post('/audio', upload.single('file'), async (req, res) => {
+api.post('/audio', uploadOne, async (req, res) => {
   if (!req.file) throw new HttpError(400, 'No file in the "file" field')
   const result = await ingestAudio({
     path: req.file.path,

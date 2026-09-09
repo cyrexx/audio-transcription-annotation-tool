@@ -47,6 +47,17 @@ describe('pairing', () => {
     ])
   })
 
+  it('rejects a body over the size limit with 413, not 500', async () => {
+    const res = await importTranscripts('['.padEnd(10 * 1024 * 1024 + 1, ' ')).expect(413)
+    expect(res.body.error).toMatch(/too large/i)
+  })
+
+  it('caps the number of rows per import', async () => {
+    const rows = Array.from({ length: 10_001 }, (_, i) => ({ path: `${i}.wav`, label: '' }))
+    const res = await importTranscripts(rows).expect(400)
+    expect(res.body.error).toMatch(/10000 rows/)
+  })
+
   it('rejects malformed JSON as a whole', async () => {
     const res = await importTranscripts('[{"path": "x.wav", "label": ').expect(400)
     expect(res.body.error).toMatch(/Malformed JSON/)

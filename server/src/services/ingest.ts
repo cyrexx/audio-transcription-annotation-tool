@@ -79,6 +79,9 @@ async function registerAudio(file: StoredUpload): Promise<AudioUploadResult> {
 }
 
 /** Imports a transcript file; each row is accepted, paired when possible, or reported. */
+/** Each accepted row costs a few queries; a file past this is not a transcript upload. */
+const MAX_TRANSCRIPT_ROWS = 10_000
+
 export async function importTranscripts(text: string): Promise<TranscriptImportReport> {
   let parsed
   try {
@@ -86,6 +89,13 @@ export async function importTranscripts(text: string): Promise<TranscriptImportR
   } catch (e) {
     if (e instanceof MalformedTranscriptError) throw new HttpError(400, e.message)
     throw e
+  }
+  const total = parsed.rows.length + parsed.rejected.length
+  if (total > MAX_TRANSCRIPT_ROWS) {
+    throw new HttpError(
+      400,
+      `Transcript file has ${total} rows; at most ${MAX_TRANSCRIPT_ROWS} rows per upload`,
+    )
   }
   const report: TranscriptImportReport = { accepted: [], rejected: [...parsed.rejected] }
 
