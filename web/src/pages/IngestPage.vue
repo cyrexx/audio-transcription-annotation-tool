@@ -23,6 +23,8 @@ const uploading = ref(false)
 const report = ref<TranscriptImportReport | null>(null)
 const transcriptError = ref('')
 const pairing = ref<PairingState>({ items: [], transcripts: [] })
+/** False until the first response, so "none" cannot flash before the lists arrive. */
+const pairingLoaded = ref(false)
 const selectedItem = ref('')
 const selectedTranscript = ref('')
 const pairError = ref('')
@@ -35,6 +37,8 @@ async function refreshPairing() {
     pairError.value = ''
   } catch (e) {
     pairError.value = `Could not load the pairing lists: ${(e as Error).message}`
+  } finally {
+    pairingLoaded.value = true
   }
   selectedItem.value = ''
   selectedTranscript.value = ''
@@ -151,7 +155,9 @@ async function pair() {
       <div class="columns">
         <div>
           <h3>Audio without transcript ({{ pairing.items.length }})</h3>
-          <p v-if="!pairing.items.length" class="muted small">none</p>
+          <p v-if="!pairing.items.length" class="muted small">
+            {{ pairingLoaded ? 'none' : 'Loading…' }}
+          </p>
           <label v-for="item in pairing.items" :key="item.id" class="option">
             <input v-model="selectedItem" type="radio" :value="item.id" />
             <RouterLink :to="`/items/${item.id}`">{{ item.filename }}</RouterLink>
@@ -160,7 +166,9 @@ async function pair() {
         </div>
         <div>
           <h3>Transcripts without audio ({{ pairing.transcripts.length }})</h3>
-          <p v-if="!pairing.transcripts.length" class="muted small">none</p>
+          <p v-if="!pairing.transcripts.length" class="muted small">
+            {{ pairingLoaded ? 'none' : 'Loading…' }}
+          </p>
           <label v-for="t in pairing.transcripts" :key="t.id" class="option">
             <input v-model="selectedTranscript" type="radio" :value="t.id" />
             <span>{{ t.path }}</span>

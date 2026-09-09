@@ -16,11 +16,16 @@ const sortKey = ref<SortKey>('updatedAt')
 const sortAsc = ref(false)
 const includeUnfinished = ref(false)
 
+/** False until the first response, so the empty state cannot flash before the list arrives. */
+const loaded = ref(false)
+
 onMounted(async () => {
   try {
     items.value = await api.listItems()
   } catch (e) {
     error.value = (e as Error).message
+  } finally {
+    loaded.value = true
   }
 })
 
@@ -95,6 +100,7 @@ const arrow = (key: SortKey) => (sortKey.value === key ? (sortAsc.value ? ' ↑'
     </div>
 
     <p v-if="error" class="error">{{ error }}</p>
+    <p v-else-if="!loaded" class="muted">Loading…</p>
     <p v-else-if="items.length === 0" class="muted">
       No items yet. Run <code>yarn db:seed</code> or upload audio on the
       <RouterLink to="/ingest">Ingest</RouterLink> page.
