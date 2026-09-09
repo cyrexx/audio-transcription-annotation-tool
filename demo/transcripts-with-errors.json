@@ -1,12 +1,21 @@
 [
   {
     "path": "audio/001_leistenhernie.wav",
-    "label": "Duplicate of a path that was already imported"
+    "label": "Operationsbericht Patient Klaus Mueller Diagnose Leistenhernie rechts"
   },
-  { "path": "audio/005_missing_label.wav" },
-  { "label": "This row has no path" },
-  { "path": "audio/006_twice.wav", "label": "First of two rows with the same path" },
-  { "path": "audio/006_twice.wav", "label": "Second of two rows with the same path" },
-  "not an object",
-  { "path": "audio/007_no_audio.wav", "label": "Valid row whose audio was never uploaded" }
+  { "path": "audio/005_appendektomie.wav" },
+  { "label": "Laparoskopische Appendektomie bei akuter Appendizitis neue Zeile" },
+  {
+    "path": "audio/006_cholezystektomie.wav",
+    "label": "Laparoskopische Cholezystektomie Punkt Vier Trokare Komma Kamera ueber Nabel"
+  },
+  {
+    "path": "audio/006_cholezystektomie.wav",
+    "label": "Cholezystektomie zweiter Versuch mit identischem Dateinamen"
+  },
+  "Gastroskopie ohne Befund Punkt",
+  {
+    "path": "audio/007_arthroskopie.wav",
+    "label": "Arthroskopie linkes Kniegelenk Absatz Resektion des Innenmeniskus Punkt"
+  }
 ]

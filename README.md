@@ -34,15 +34,17 @@ the upload limit.
 
 ## Demo path (about five minutes)
 
-`yarn setup` seeds the demo recordings from `demo/` through the real ingest code, so the queue is
-populated on first start. Every step below names the exact value to enter; the transcript in
-`demo/transcripts.json` contains deliberate recognition errors for you to correct. It has no
+`yarn setup` seeds the recordings in `demo/audio` and the transcripts in `demo/transcripts.json`
+through the real ingest code, so the queue is populated on first start. One recording,
+`demo/upload/002_tur_prostata.wav`, is deliberately left out of the seed: its transcript row is
+already waiting, and you upload the audio yourself in step 8. Every step below names the exact
+value to enter. The transcripts contain deliberate recognition errors for you to correct, and no
 punctuation on purpose: dictated commands such as "Punkt" or "neue Zeile" arrive as words in a
 first-pass transcript, and marking them is what FORMATTING_COMMAND spans are for.
 
-1. **Queue** (home page). Three items: two over 15 s are _Pending_, `003_kurznotiz.wav` is under
-   15 s and _Auto-rejected_. Choose _Pending_ in the _Status_ filter, then click the _Duration_
-   column header to sort.
+1. **Queue** (home page). Two items: `001_leistenhernie.wav` is over 15 s and _Pending_,
+   `003_kurznotiz.wav` is under 15 s and _Auto-rejected_. Choose _Pending_ in the _Status_ filter,
+   then click the _Duration_ column header to sort.
 2. Click **001_leistenhernie.wav**. Type your name into the _Annotator_ box in the header; it is
    saved with the item.
 3. **Player.** Press **Alt+K** to play and pause, **Alt+J** / **Alt+L** to jump 3 s, **Alt+,** /
@@ -76,16 +78,22 @@ first-pass transcript, and marking them is what FORMATTING_COMMAND spans are for
    in the distance _Override_; the export uses these instead of the derived values.
 7. Click **Mark done**. Back in the queue, click **Export JSONL** and open the downloaded file:
    one line for the item with both transcripts, all spans and the recording conditions.
-8. Open **002_tur_prostata.wav** for the remaining type: drag from `C` to `M` in
-   `C wie Caesar E F U R O X I M`, choose _SPELLED OUT_, resolved word `Cefuroxim`, click
-   _Add span_. Also mark `Universitaetsklinikum Essen` as _NAMED ENTITY / organisation_ and
-   `zwanzig Scharrier` as _MEASUREMENT_ `20` `Ch` after correcting `Scharrier` to `Charriere`.
-9. **Ingest page.** Upload `demo/transcripts-with-errors.json` under _Transcript file_ to see the
-   per-row report: a duplicate path, a missing label, a missing path, a duplicate within the file,
-   a non-object row, and one valid row without audio that lands in _Transcripts without audio_.
-   Under _Audio files_, upload any `.wav`, `.mp3` or `.m4a` of your own; a `.txt` or a renamed
-   non-audio file is rejected with a reason. Select the unmatched transcript and an unpaired
-   recording and click _Pair selected_, or open an item without transcript and paste one.
+8. **Ingest page: upload and pairing.** The _Pairing_ section already lists two transcripts
+   without audio. Under _Audio files_, upload `demo/upload/002_tur_prostata.wav`: the verdict
+   reads _0:34.3, Pending, transcript paired_, because a transcript with that filename was
+   waiting. Then upload `demo/transcripts-with-errors.json` under _Transcript file_ to see the
+   per-row report. Its rows are, in order: a path already imported, a row without label, a row
+   without path, two rows with the same path (the first is accepted), a row that is not an object,
+   and a valid row whose audio does not exist. The accepted rows join
+   `audio/004_nephrektomie.wav` in _Transcripts without audio_, where the grey text is the start of
+   each transcript. Upload any `.wav`, `.mp3` or `.m4a` of your own to pair one manually with
+   _Pair selected_; a `.txt` or a renamed non-audio file is rejected with a reason. An item
+   without transcript also accepts a pasted transcript on its page.
+9. Open **002_tur_prostata.wav** from the verdict link or the queue for the remaining type: drag
+   from `C` to `M` in `C wie Caesar E F U R O X I M`, choose _SPELLED OUT_, resolved word
+   `Cefuroxim`, click _Add span_. Also mark `Universitaetsklinikum Essen` as
+   _NAMED ENTITY / organisation_ and `zwanzig Scharrier` as _MEASUREMENT_ `20` `Ch` after
+   correcting `Scharrier` to `Charriere`.
 
 ## Tests
 

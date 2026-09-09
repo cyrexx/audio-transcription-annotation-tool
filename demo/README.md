@@ -1,15 +1,15 @@
 # Demo data
 
-Files in this folder are pushed through the real ingest code by `yarn db:seed`, so a reviewer
-sees the tool populated within a minute of starting it.
+`yarn db:seed` pushes `audio/` and `transcripts.json` through the real ingest code, so a reviewer
+sees the tool populated within a minute of starting it. `upload/` is left for the reviewer.
 
-| File                           | Purpose                                                                               |
-| ------------------------------ | ------------------------------------------------------------------------------------- |
-| `audio/001_leistenhernie.wav`  | Dictation over 15 s, routed to a human                                                |
-| `audio/002_tur_prostata.wav`   | Dictation over 15 s, routed to a human                                                |
-| `audio/003_kurznotiz.wav`      | Dictation of 15 s or under, auto-rejected                                             |
-| `transcripts.json`             | First-pass AI transcripts in the production format, with typical model errors left in |
-| `transcripts-with-errors.json` | Upload this by hand on the Ingest page to see the validation report                   |
+| File                           | Purpose                                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `audio/001_leistenhernie.wav`  | Seeded. Dictation over 15 s, routed to a human                                                                      |
+| `audio/003_kurznotiz.wav`      | Seeded. Dictation of 15 s or under, auto-rejected                                                                   |
+| `upload/002_tur_prostata.wav`  | Not seeded: the reviewer uploads it and watches it pair with its waiting transcript                                 |
+| `transcripts.json`             | First-pass AI transcripts in the production format, with typical model errors left in; the row for 004 has no audio |
+| `transcripts-with-errors.json` | Upload this by hand on the Ingest page to see the validation report                                                 |
 
 The recordings are read by a human speaker from the scripts below. Both long clips are
 written so that every annotation type occurs at least once. The punctuation in the scripts is
@@ -31,7 +31,7 @@ Covers: NAMED_ENTITY (person, date), MEDICAL_TERM (diagnosis, drug, anatomy, pro
 MEASUREMENT (1500 mg, 50 ml), FORMATTING_COMMAND (colon, newline, paragraph, period),
 NUMBER ("sechs null" meaning 6/0).
 
-## Script 2: `002_tur_prostata.wav` (aim for 30 to 40 seconds)
+## Script 2: `upload/002_tur_prostata.wav` (aim for 30 to 40 seconds)
 
 > Universitätsklinikum Essen, Klinik für Urologie.
 > Transurethrale Resektion der Prostata am dritten September zweitausendsechsundzwanzig.
