@@ -13,7 +13,7 @@ const annotator = useAnnotatorName()
     </nav>
     <label class="row small">
       Annotator
-      <input v-model="annotator" type="text" placeholder="your name" size="14" />
+      <input v-model="annotator" type="text" placeholder="your name" size="14" maxlength="100" />
     </label>
   </header>
   <main>

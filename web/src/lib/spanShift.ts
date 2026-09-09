@@ -21,6 +21,9 @@ export function shiftSpans<S extends { start: number; end: number }>(
   })
 }
 
+/** 16 million cells is a 64 MB table and well past any dictation; 20k x 20k would be 1.6 GB. */
+const MAX_TABLE_CELLS = 16_000_000
+
 interface Hunk {
   oldStart: number
   oldEnd: number
@@ -64,6 +67,13 @@ export function diffHunks(oldTokens: readonly string[], newTokens: readonly stri
   const a = oldTokens.slice(prefix, oldTokens.length - suffix)
   const b = newTokens.slice(prefix, newTokens.length - suffix)
   if (a.length === 0 && b.length === 0) return []
+  // A pasted rewrite of a very long text would need a table of a.length * b.length cells; past
+  // this size the whole changed region counts as one replacement instead.
+  if (a.length * b.length > MAX_TABLE_CELLS) {
+    return [
+      { oldStart: prefix, oldEnd: prefix + a.length, newStart: prefix, newEnd: prefix + b.length },
+    ]
+  }
 
   // LCS table over the middle part only.
   const width = b.length + 1

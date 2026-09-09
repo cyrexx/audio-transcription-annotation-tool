@@ -29,6 +29,8 @@ const RETRY_MS = 5000
 
 const item = ref<ItemDetail | null>(null)
 const loadError = ref('')
+/** Failures of pair, unpair and paste; shown inline, the page stays. */
+const actionError = ref('')
 const text = ref('')
 const spans = ref<EditorSpan[]>([])
 const speechRateOverride = ref<number | null>(null)
@@ -167,7 +169,7 @@ function saveSpan(input: SpanInput) {
   if (activeSpan.value) {
     spans.value = spans.value.map((s) => (s.id === activeSpanId.value ? { ...input, id: s.id } : s))
   } else {
-    spans.value = [...spans.value, { ...input, id: crypto.randomUUID() }]
+    spans.value = [...spans.value, { ...input, id: localId() }]
   }
   clearSelection()
 }
@@ -175,6 +177,9 @@ function saveSpan(input: SpanInput) {
 function resizeSpan(start: number, end: number) {
   spans.value = spans.value.map((s) => (s.id === activeSpanId.value ? { ...s, start, end } : s))
 }
+
+/** Client-only ids; the server assigns its own. randomUUID needs a secure context, http://localhost is one. */
+const localId = () => crypto.randomUUID?.() ?? `local-${Date.now()}-${Math.random()}`
 
 function deleteSpan() {
   spans.value = spans.value.filter((s) => s.id !== activeSpanId.value)
@@ -194,8 +199,13 @@ function toggleMode() {
 // Transcript pairing --------------------------------------------------------------------
 
 async function paste() {
-  await api.pasteTranscript(props.id, pasteText.value)
-  await load()
+  try {
+    await api.pasteTranscript(props.id, pasteText.value)
+    actionError.value = ''
+    await load()
+  } catch (e) {
+    actionError.value = (e as Error).message
+  }
 }
 
 async function unpair() {
@@ -205,8 +215,13 @@ async function unpair() {
     )
   )
     return
-  await api.unpair(props.id)
-  await load()
+  try {
+    await api.unpair(props.id)
+    actionError.value = ''
+    await load()
+  } catch (e) {
+    actionError.value = (e as Error).message
+  }
 }
 
 // Keyboard ------------------------------------------------------------------------------
@@ -268,6 +283,7 @@ const SAVE_LABELS = {
       <RouterLink to="/">← Queue</RouterLink>
       <h1 style="margin: 0">{{ item.filename }}</h1>
       <span class="badge" :class="item.status">{{ STATUS_LABELS[item.status] }}</span>
+      <span v-if="actionError" class="error small">{{ actionError }}</span>
       <span style="flex: 1"></span>
       <template v-if="editable">
         <span v-if="!annotator.trim()" class="small muted">No annotator name set (top right)</span>

@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { matchShortcut, matchSpanType } from './shortcuts.ts'
 
 const key = (code: string, mods: Partial<KeyboardEvent> = {}) =>
-  ({ code, altKey: false, shiftKey: false, ctrlKey: false, ...mods }) as KeyboardEvent
+  ({
+    code,
+    altKey: false,
+    shiftKey: false,
+    ctrlKey: false,
+    metaKey: false,
+    ...mods,
+  }) as KeyboardEvent
 
 describe('matchShortcut', () => {
   it('matches on the physical key plus exact modifiers', () => {
@@ -10,6 +17,12 @@ describe('matchShortcut', () => {
     expect(matchShortcut(key('KeyJ', { altKey: true }))).toBe('back')
     expect(matchShortcut(key('KeyJ', { altKey: true, shiftKey: true }))).toBe('backFar')
     expect(matchShortcut(key('KeyS', { ctrlKey: true }))).toBe('save')
+  })
+
+  it('ignores combinations that include the Command key', () => {
+    expect(matchShortcut(key('KeyK', { altKey: true, metaKey: true }))).toBeNull()
+    expect(matchShortcut(key('KeyS', { ctrlKey: true, metaKey: true }))).toBeNull()
+    expect(matchSpanType(key('Digit1', { altKey: true, metaKey: true }))).toBeNull()
   })
 
   it('ignores plain typing so the shortcuts are safe inside the transcript editor', () => {

@@ -23,7 +23,12 @@ const pairError = ref('')
 onMounted(refreshPairing)
 
 async function refreshPairing() {
-  pairing.value = await api.pairing()
+  try {
+    pairing.value = await api.pairing()
+    pairError.value = ''
+  } catch (e) {
+    pairError.value = `Could not load the pairing lists: ${(e as Error).message}`
+  }
   selectedItem.value = ''
   selectedTranscript.value = ''
 }

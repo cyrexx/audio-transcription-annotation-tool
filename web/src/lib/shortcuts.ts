@@ -56,7 +56,7 @@ export const FORM_SHORTCUTS = [
 /** Span type index (0-based) for Alt+1 … Alt+6, or null. */
 export function matchSpanType(event: KeyboardEvent): number | null {
   const digit = /^Digit([1-6])$/.exec(event.code)
-  if (!digit || !event.altKey || event.shiftKey || event.ctrlKey) return null
+  if (!digit || !event.altKey || event.shiftKey || event.ctrlKey || event.metaKey) return null
   return Number(digit[1]) - 1
 }
 
@@ -66,7 +66,8 @@ export function matchShortcut(event: KeyboardEvent): PlayerAction | null {
       s.code === event.code &&
       s.alt === event.altKey &&
       s.shift === event.shiftKey &&
-      s.ctrl === event.ctrlKey,
+      s.ctrl === event.ctrlKey &&
+      !event.metaKey,
   )
   return hit?.action ?? null
 }
