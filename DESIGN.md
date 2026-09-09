@@ -32,8 +32,9 @@ carries no timings and aligners are out of scope.
 **Audio facts are read once, on the server, at upload.** `music-metadata` parses all three formats
 and thereby validates the content; bit depth exists only for PCM. Levels need samples: WAV is
 decoded natively, so demo, tests and the clinical format never need ffmpeg; mp3/m4a use ffmpeg
-when present and otherwise say why the estimate is missing (`ffmpeg-static` would add 80 MB to
-`yarn install` for an optional estimate).
+when present and otherwise say why the estimate is missing. System ffmpeg is optional rather than
+bundled: `ffmpeg-static` would add an 80 MB download to every `yarn install` for an optional
+estimate, and the failure mode without it is a labelled gap in the panel, not a broken install.
 
 **Distance estimate.** RMS over 50 ms windows: the 10th percentile is the noise floor (pauses), the
 90th the speech level, their difference the level-to-noise ratio. Close is ratio ≥ 30 dB and speech

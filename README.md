@@ -35,13 +35,10 @@ change both if you change `PORT`.
 ## Demo path (about five minutes)
 
 `yarn dev` seeds the recordings in `demo/audio` and the transcripts in `demo/transcripts.json`
-through the real ingest code on every start (both steps are idempotent), so the queue is populated
-on first start. One recording,
-`demo/upload/002_tur_prostata.wav`, is deliberately left out of the seed: its transcript row is
-already waiting, and you upload the audio yourself in step 8. Every step below names the exact
-value to enter. The transcripts contain deliberate recognition errors for you to correct, and no
-punctuation on purpose: dictated commands such as "Punkt" or "neue Zeile" arrive as words in a
-first-pass transcript, and marking them is what FORMATTING_COMMAND spans are for.
+through the real ingest code, so the queue is populated on first start; the transcripts contain
+deliberate recognition errors for you to correct. One recording, `demo/upload/002_tur_prostata.wav`,
+is left out of the seed on purpose: its transcript row is already waiting, and you upload the audio
+yourself in step 8. Every step below names the exact value to enter.
 
 1. **Queue** (home page). Two items: `001_leistenhernie.wav` is over 15 s and _Pending_,
    `003_kurznotiz.wav` is under 15 s and _Auto-rejected_. Click the _Duration_ column header to
@@ -81,17 +78,19 @@ first-pass transcript, and marking them is what FORMATTING_COMMAND spans are for
 7. Click **Mark done**. Back in the queue, click **Export JSONL** and open the downloaded file:
    one line for the item with both transcripts, all spans and the recording conditions.
 8. **Ingest page: upload and pairing.** The _Pairing_ section already lists two transcripts
-   without audio. Under _Audio files_, upload `demo/upload/002_tur_prostata.wav`: the verdict
-   reads _0:34.3, Pending, transcript paired_, because a transcript with that filename was
-   waiting. Then upload `demo/transcripts-with-errors.json` under _Transcript file_ to see the
-   per-row report. Its rows are, in order: a path already imported, a row without label, a row
-   without path, two rows with the same path (the first is accepted), a row that is not an object,
-   and a valid row whose audio does not exist. The accepted rows join
-   `audio/004_nephrektomie.wav` in _Transcripts without audio_, where the grey text is the start of
-   each transcript. Upload any `.wav`, `.mp3` or `.m4a` of your own to pair one manually with
-   _Pair selected_. A renamed non-audio file is rejected with a reason (the picker lists only
-   audio types; choose "All files" to try a `.txt`). An item without transcript also accepts a
-   pasted transcript on its page.
+   without audio.
+   - Under _Audio files_, upload `demo/upload/002_tur_prostata.wav`. The verdict reads
+     _0:34.3, Pending, transcript paired_, because a transcript with that filename was waiting.
+   - Under _Transcript file_, upload `demo/transcripts-with-errors.json` to see the per-row
+     report. Its rows are, in order: a path already imported, a row without label, a row without
+     path, two rows with the same path (the first is accepted), a row that is not an object, and
+     a valid row whose audio does not exist.
+   - The accepted rows join `audio/004_nephrektomie.wav` in _Transcripts without audio_, where
+     the grey text is the start of each transcript.
+   - Optional: upload any `.wav`, `.mp3` or `.m4a` of your own, select it and a transcript, and
+     click _Pair selected_. A renamed non-audio file is rejected with a reason (the picker lists
+     only audio types; choose "All files" to try a `.txt`). An item without transcript also
+     accepts a pasted transcript on its page.
 9. Open **002_tur_prostata.wav** from the verdict link or the queue for the remaining type: drag
    from `C` to `M` in `C wie Caesar E F U R O X I M`, choose _SPELLED OUT_, resolved word
    `Cefuroxim`, click _Add span_. Also mark `Universitaetsklinikum Essen` as
@@ -139,7 +138,7 @@ docs/     implementation plan and decision log
   another port; free the port or change `PORT` (server) and `web/vite.config.ts` (proxy target
   and dev port) together.
 - **`yarn: command not found`**: run `corepack enable`; with a system-wide Node it may need
-  `sudo`. Corepack asks once whether to download Yarn 4.18: answer yes.
+  `sudo`.
 - **"Node 22 or newer is required"**: switch with `nvm use` (reads `.nvmrc`) or install Node 22.
 - **"Can't reach database server" during `yarn dev` or the tests**: `docker compose up -d --wait`
   must have completed; the test database `annotation_test` is created automatically the first
