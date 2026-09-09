@@ -10,9 +10,14 @@ export class FfmpegUnavailableError extends Error {
   }
 }
 
-/** Decodes any ffmpeg-readable file to mono 32-bit float samples. */
+/**
+ * Decodes any ffmpeg-readable file to mono 32-bit float samples. The output buffer is sized from
+ * the duration the header announced, so the decode holds one copy of the audio and a stream that
+ * keeps going past that size is cut off instead of growing without bound.
+ */
 export function decodeWithFfmpeg(
   filePath: string,
+  expectedSec: number,
 ): Promise<{ samples: Float32Array; sampleRate: number }> {
   return new Promise((resolve, reject) => {
     const args = [
@@ -29,9 +34,19 @@ export function decodeWithFfmpeg(
       '-',
     ]
     const child = spawn(config.ffmpegPath, args, { stdio: ['ignore', 'pipe', 'pipe'] })
-    const out: Buffer[] = []
+    const capacity = new ArrayBuffer(Math.ceil((expectedSec + 1) * DECODE_RATE) * 4)
+    const bytes = new Uint8Array(capacity)
+    let written = 0
     let err = ''
-    child.stdout.on('data', (chunk: Buffer) => out.push(chunk))
+    child.stdout.on('data', (chunk: Buffer) => {
+      if (written + chunk.length > bytes.length) {
+        err = 'decoded audio is longer than the header announced'
+        child.kill()
+        return
+      }
+      bytes.set(chunk, written)
+      written += chunk.length
+    })
     child.stderr.on('data', (chunk: Buffer) => (err += chunk.toString()))
     child.on('error', (e: NodeJS.ErrnoException) => {
       reject(e.code === 'ENOENT' ? new FfmpegUnavailableError() : e)
@@ -39,11 +54,10 @@ export function decodeWithFfmpeg(
     child.on('close', (code) => {
       if (code !== 0)
         return reject(new Error(`ffmpeg failed: ${err.trim() || `exit code ${code}`}`))
-      const raw = Buffer.concat(out)
-      // Copy into a fresh ArrayBuffer so the Float32Array view is 4-byte aligned.
-      const aligned = new ArrayBuffer(raw.length - (raw.length % 4))
-      new Uint8Array(aligned).set(raw.subarray(0, aligned.byteLength))
-      resolve({ samples: new Float32Array(aligned), sampleRate: DECODE_RATE })
+      resolve({
+        samples: new Float32Array(capacity, 0, Math.floor(written / 4)),
+        sampleRate: DECODE_RATE,
+      })
     })
   })
 }

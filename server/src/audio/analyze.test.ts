@@ -70,3 +70,38 @@ describe('analyzeAudio', () => {
     await expect(analyzeAudio(file)).rejects.toBeInstanceOf(UnsupportedAudioError)
   })
 })
+
+describe('analyzeAudio against crafted headers', () => {
+  it('rejects a header that yields an infinite duration', async () => {
+    const wav = synthWav({ seconds: 0.1 })
+    wav.writeUInt16LE(0, 32) // fmt.blockAlign = 0 makes duration = data / 0
+    const file = await tempFile('inf.wav', wav)
+    await expect(analyzeAudio(file)).rejects.toThrow(/duration/)
+  })
+
+  it('rejects absurd sample rates instead of grinding through them', async () => {
+    const file = await tempFile('sr1.wav', synthWav({ seconds: 1, sampleRate: 1 }))
+    await expect(analyzeAudio(file)).rejects.toThrow(/sample rate/)
+  })
+
+  it('skips the level analysis, with a reason, beyond the duration cap', async () => {
+    const file = await tempFile(
+      'long.wav',
+      synthWav({ seconds: 3601, sampleRate: 1000, bitDepth: 8 }),
+    )
+    const facts = await analyzeAudio(file)
+    expect(facts.durationSec).toBeCloseTo(3601, 0)
+    expect(facts.levels).toBeNull()
+    expect(facts.levelsError).toMatch(/60 minutes/)
+  })
+
+  it('truncates oversized recorder metadata', async () => {
+    const file = await tempFile(
+      'meta.wav',
+      synthWav({ seconds: 0.1, info: { ICMT: 'x'.repeat(5000) } }),
+    )
+    const { metadata } = await analyzeAudio(file)
+    expect(metadata.ICMT).toHaveLength(1001)
+    expect(metadata.ICMT.endsWith('…')).toBe(true)
+  })
+})

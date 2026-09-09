@@ -34,6 +34,14 @@ export interface AudioFacts {
 
 export class UnsupportedAudioError extends Error {}
 
+/** Headers outside this range are crafted or broken; real recorders sit between 8 and 192 kHz. */
+const MIN_SAMPLE_RATE = 1000
+const MAX_SAMPLE_RATE = 384000
+/** Level analysis decodes the whole recording into memory; dictations are minutes, not hours. */
+const MAX_ANALYSIS_SEC = 60 * 60
+/** Recorder metadata values are shown in a panel; anything longer is not metadata. */
+const MAX_METADATA_CHARS = 1000
+
 /**
  * Reads header facts and signal levels from a file on disk. music-metadata picks its parser by
  * the file extension, so a file whose content does not match its extension fails to parse and
@@ -52,9 +60,15 @@ export async function analyzeAudio(filePath: string): Promise<AudioFacts> {
     throw new UnsupportedAudioError(`File is not a readable WAV, MP3 or M4A file${detail}`)
   }
   const durationSec = meta.format.duration
-  if (!durationSec) throw new UnsupportedAudioError('Could not determine the audio duration')
+  if (!durationSec || !Number.isFinite(durationSec)) {
+    throw new UnsupportedAudioError('Could not determine the audio duration')
+  }
+  const sampleRate = meta.format.sampleRate
+  if (sampleRate !== undefined && (sampleRate < MIN_SAMPLE_RATE || sampleRate > MAX_SAMPLE_RATE)) {
+    throw new UnsupportedAudioError(`Unsupported sample rate: ${sampleRate} Hz`)
+  }
 
-  const { levels, levelsError } = await measureLevels(filePath, kind)
+  const { levels, levelsError } = await measureLevels(filePath, kind, durationSec)
   return {
     kind,
     durationSec,
@@ -77,10 +91,18 @@ function kindOf(container: string | undefined): AudioKind | null {
   return null
 }
 
-async function measureLevels(filePath: string, kind: AudioKind) {
+async function measureLevels(filePath: string, kind: AudioKind, durationSec: number) {
+  if (durationSec > MAX_ANALYSIS_SEC) {
+    return {
+      levels: null,
+      levelsError: 'Recording is longer than 60 minutes; level analysis skipped',
+    }
+  }
   try {
     const pcm =
-      kind === 'wav' ? decodeWav(await readFile(filePath)) : await decodeWithFfmpeg(filePath)
+      kind === 'wav'
+        ? decodeWav(await readFile(filePath))
+        : await decodeWithFfmpeg(filePath, durationSec)
     return { levels: analyzeLevels(pcm.samples, pcm.sampleRate), levelsError: null }
   } catch (e) {
     return { levels: null, levelsError: (e as Error).message }
@@ -98,7 +120,10 @@ function recorderMetadata(meta: IAudioMetadata): Record<string, string> {
 }
 
 function displayValue(value: unknown): string | null {
-  if (typeof value === 'string') return value.trim() || null
+  if (typeof value === 'string') {
+    const text = value.trim()
+    return text.length > MAX_METADATA_CHARS ? `${text.slice(0, MAX_METADATA_CHARS)}…` : text || null
+  }
   if (typeof value === 'number') return value === 0 ? null : String(value)
   if (value instanceof Uint8Array) {
     return value.some((b) => b !== 0) ? Buffer.from(value).toString('hex') : null
