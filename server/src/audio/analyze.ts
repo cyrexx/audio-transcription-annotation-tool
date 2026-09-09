@@ -41,6 +41,8 @@ const MAX_SAMPLE_RATE = 384000
 const MAX_ANALYSIS_SEC = 60 * 60
 /** Recorder metadata values are shown in a panel; anything longer is not metadata. */
 const MAX_METADATA_CHARS = 1000
+/** A recorder writes a handful of INFO tags; a file with thousands is not carrying metadata. */
+const MAX_METADATA_ENTRIES = 100
 
 /**
  * Reads header facts and signal levels from a file on disk. music-metadata picks its parser by
@@ -63,8 +65,9 @@ export async function analyzeAudio(filePath: string): Promise<AudioFacts> {
   if (!durationSec || !Number.isFinite(durationSec)) {
     throw new UnsupportedAudioError('Could not determine the audio duration')
   }
-  const sampleRate = meta.format.sampleRate
-  if (sampleRate !== undefined && (sampleRate < MIN_SAMPLE_RATE || sampleRate > MAX_SAMPLE_RATE)) {
+  // MP4 stores the rate in 16.16 fixed point, so 96 kHz AAC reads as 0: unknown, not invalid.
+  const sampleRate = meta.format.sampleRate || null
+  if (sampleRate !== null && (sampleRate < MIN_SAMPLE_RATE || sampleRate > MAX_SAMPLE_RATE)) {
     throw new UnsupportedAudioError(`Unsupported sample rate: ${sampleRate} Hz`)
   }
 
@@ -72,7 +75,7 @@ export async function analyzeAudio(filePath: string): Promise<AudioFacts> {
   return {
     kind,
     durationSec,
-    sampleRate: meta.format.sampleRate ?? null,
+    sampleRate,
     channels: meta.format.numberOfChannels ?? null,
     // Lossy containers may carry a nominal sample size (AAC in MP4 says 16); it means nothing.
     bitDepth: meta.format.lossless ? (meta.format.bitsPerSample ?? null) : null,
@@ -113,6 +116,7 @@ async function measureLevels(filePath: string, kind: AudioKind, durationSec: num
 function recorderMetadata(meta: IAudioMetadata): Record<string, string> {
   const out: Record<string, string> = {}
   for (const tag of meta.native.exif ?? []) {
+    if (Object.keys(out).length >= MAX_METADATA_ENTRIES) break
     const value = displayValue(tag.value)
     if (value) out[tag.id] = value
   }

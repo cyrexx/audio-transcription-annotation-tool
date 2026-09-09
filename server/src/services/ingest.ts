@@ -78,10 +78,10 @@ async function registerAudio(file: StoredUpload): Promise<AudioUploadResult> {
   }
 }
 
-/** Imports a transcript file; each row is accepted, paired when possible, or reported. */
 /** Each accepted row costs a few queries; a file past this is not a transcript upload. */
 const MAX_TRANSCRIPT_ROWS = 10_000
 
+/** Imports a transcript file; each row is accepted, paired when possible, or reported. */
 export async function importTranscripts(text: string): Promise<TranscriptImportReport> {
   let parsed
   try {

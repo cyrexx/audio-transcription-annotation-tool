@@ -34,24 +34,32 @@ export function decodeWithFfmpeg(
       '-',
     ]
     const child = spawn(config.ffmpegPath, args, { stdio: ['ignore', 'pipe', 'pipe'] })
-    const capacity = new ArrayBuffer(Math.ceil((expectedSec + 1) * DECODE_RATE) * 4)
+    // Header durations for mp3 without an info frame are estimates from the first frame and
+    // run up to about half a percent short; ten percent plus a second covers that comfortably
+    // while keeping the bound (about 250 MB at the 60-minute analysis cap).
+    const capacity = new ArrayBuffer(Math.ceil((expectedSec * 1.1 + 1) * DECODE_RATE) * 4)
     const bytes = new Uint8Array(capacity)
     let written = 0
+    let overrun = false
     let err = ''
     child.stdout.on('data', (chunk: Buffer) => {
+      if (overrun) return
       if (written + chunk.length > bytes.length) {
-        err = 'decoded audio is longer than the header announced'
+        overrun = true
         child.kill()
         return
       }
       bytes.set(chunk, written)
       written += chunk.length
     })
-    child.stderr.on('data', (chunk: Buffer) => (err += chunk.toString()))
+    // Only the tail of stderr is kept; a corrupt file can produce megabytes of warnings.
+    child.stderr.on('data', (chunk: Buffer) => (err = (err + chunk.toString()).slice(-500)))
     child.on('error', (e: NodeJS.ErrnoException) => {
       reject(e.code === 'ENOENT' ? new FfmpegUnavailableError() : e)
     })
     child.on('close', (code) => {
+      if (overrun)
+        return reject(new Error('ffmpeg failed: decoded audio is longer than the header announced'))
       if (code !== 0)
         return reject(new Error(`ffmpeg failed: ${err.trim() || `exit code ${code}`}`))
       resolve({

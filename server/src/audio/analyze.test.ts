@@ -1,9 +1,12 @@
+import { spawnSync } from 'node:child_process'
 import { mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { sine, synthWav } from '../../test/helpers/synthWav.ts'
+import { config } from '../config.ts'
 import { analyzeAudio, UnsupportedAudioError } from './analyze.ts'
+import { decodeWithFfmpeg } from './ffmpeg.ts'
 
 async function tempFile(name: string, content: Buffer): Promise<string> {
   const dir = await mkdtemp(path.join(tmpdir(), 'analyze-'))
@@ -103,5 +106,72 @@ describe('analyzeAudio against crafted headers', () => {
     const { metadata } = await analyzeAudio(file)
     expect(metadata.ICMT).toHaveLength(1001)
     expect(metadata.ICMT.endsWith('…')).toBe(true)
+  })
+})
+
+describe('metadata entry cap', () => {
+  it('keeps at most 100 recorder metadata entries', async () => {
+    const info = Object.fromEntries(
+      Array.from({ length: 150 }, (_, i) => [`I${String(i).padStart(3, '0')}`, 'v']),
+    )
+    const file = await tempFile('many.wav', synthWav({ seconds: 0.1, info }))
+    expect(Object.keys((await analyzeAudio(file)).metadata)).toHaveLength(100)
+  })
+})
+
+const ffmpegAvailable = spawnSync(config.ffmpegPath, ['-version']).status === 0
+
+/** ffmpeg-made inputs; these run only where ffmpeg is installed and skip elsewhere. */
+describe.skipIf(!ffmpegAvailable)('lossy formats through ffmpeg', () => {
+  async function encode(name: string, seconds: number, ...args: string[]): Promise<string> {
+    const dir = await mkdtemp(path.join(tmpdir(), 'encode-'))
+    const file = path.join(dir, name)
+    const result = spawnSync(config.ffmpegPath, [
+      '-v',
+      'error',
+      '-y',
+      '-f',
+      'lavfi',
+      '-i',
+      `sine=frequency=440:duration=${seconds}`,
+      ...args,
+      file,
+    ])
+    if (result.status !== 0) throw new Error(result.stderr.toString())
+    return file
+  }
+
+  it('analyzes a long constant-bitrate mp3 without an info header, whose duration is only estimated', async () => {
+    const file = await encode(
+      'cbr.mp3',
+      600,
+      '-codec:a',
+      'libmp3lame',
+      '-b:a',
+      '32k',
+      '-write_xing',
+      '0',
+    )
+    const facts = await analyzeAudio(file)
+    expect(facts.durationSec).toBeGreaterThan(590)
+    expect(facts.levelsError).toBeNull()
+    // A steady tone: audible level, and windows that hardly differ from each other.
+    expect(facts.levels!.peakDbfs).toBeGreaterThan(-30)
+    expect(facts.levels!.snrDb).toBeLessThan(6)
+  }, 60_000)
+
+  it('fails with a clean message when the decode overruns the announced duration', async () => {
+    const file = path.join(import.meta.dirname, '../../test/fixtures/short.mp3')
+    await expect(decodeWithFfmpeg(file, 0.05)).rejects.toThrow(
+      /^ffmpeg failed: decoded audio is longer than the header announced$/,
+    )
+  })
+
+  it('accepts a 96 kHz m4a, whose sample rate the container cannot express', async () => {
+    const file = await encode('hi.m4a', 1, '-ar', '96000', '-codec:a', 'aac')
+    const facts = await analyzeAudio(file)
+    expect(facts.kind).toBe('m4a')
+    expect(facts.sampleRate).toBeNull()
+    expect(facts.levelsError).toBeNull()
   })
 })

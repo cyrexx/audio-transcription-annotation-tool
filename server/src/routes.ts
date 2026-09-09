@@ -37,7 +37,9 @@ const upload = multer({
 /** Every multipart parsing failure is the client's, so it answers 4xx with the parser's reason. */
 const uploadOne: RequestHandler = (req, res, next) =>
   upload.single('file')(req, res, (err: unknown) => {
-    if (!err || err instanceof HttpError) return next(err)
+    // Our own errors and system errors (disk full, permissions) keep their meaning; the rest is
+    // the parser rejecting what the client sent.
+    if (!err || err instanceof HttpError || 'errno' in (err as object)) return next(err)
     if (err instanceof MulterError && err.code === 'LIMIT_FILE_SIZE') {
       return next(
         new HttpError(
