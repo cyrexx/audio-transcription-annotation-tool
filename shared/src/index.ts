@@ -1,4 +1,5 @@
 export * from './annotation.ts'
+export * from './audio.ts'
 export * from './api.ts'
 export * from './conditions.ts'
 export * from './routing.ts'

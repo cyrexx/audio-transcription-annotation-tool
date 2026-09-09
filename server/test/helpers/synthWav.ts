@@ -23,7 +23,7 @@ export const sine =
 export function synthWav(opts: SynthWavOptions): Buffer {
   const sampleRate = opts.sampleRate ?? 16000
   const channels = opts.channels ?? 1
-  const bitDepth = opts.bitDepth ?? 16
+  const bitDepth = opts.bitDepth ?? (opts.float ? 32 : 16)
   const bytesPerSample = bitDepth / 8
   const frames = Math.round(opts.seconds * sampleRate)
   const signal = opts.signal ?? (() => 0)

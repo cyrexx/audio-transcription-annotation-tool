@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Token } from 'shared'
 import { computed } from 'vue'
-import type { EditorSpan } from './TranscriptEditor.vue'
+import type { EditorSpan } from '../lib/spans.ts'
 
 const props = defineProps<{ spans: EditorSpan[]; tokens: Token[]; activeSpanId: string | null }>()
 const emit = defineEmits<{ select: [id: string] }>()
@@ -16,20 +16,23 @@ const text = (span: EditorSpan) =>
 
 /** The one or two attributes worth showing in the list. */
 function summary(span: EditorSpan): string {
-  const a = span.attributes as Record<string, unknown>
   switch (span.type) {
     case 'NUMBER':
-      return `${a.value} (${a.rendering})`
-    case 'FORMATTING_COMMAND':
-      return `${String(a.command).replaceAll('_', ' ')}${a.interpretation === 'literal' ? ', literal' : ''}`
+      return `${span.attributes.value} (${span.attributes.rendering})`
+    case 'FORMATTING_COMMAND': {
+      const { command, interpretation } = span.attributes
+      return `${command.replaceAll('_', ' ')}${interpretation === 'literal' ? ', literal' : ''}`
+    }
     case 'SPELLED_OUT':
-      return String(a.resolved)
+      return span.attributes.resolved
     case 'NAMED_ENTITY':
-      return String(a.kind)
-    case 'MEDICAL_TERM':
-      return `${a.category}${a.note ? `, ${a.note}` : ''}`
+      return span.attributes.kind
+    case 'MEDICAL_TERM': {
+      const { category, note } = span.attributes
+      return `${category}${note ? `, ${note}` : ''}`
+    }
     case 'MEASUREMENT':
-      return `${a.value} ${a.unit}`
+      return `${span.attributes.value} ${span.attributes.unit}`
   }
 }
 </script>

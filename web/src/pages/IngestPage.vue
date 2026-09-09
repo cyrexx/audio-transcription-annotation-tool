@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import type { PairingState, TranscriptImportReport } from 'shared'
+import {
+  AUDIO_ACCEPT,
+  MAX_AUTO_REJECT_SEC,
+  type PairingState,
+  type TranscriptImportReport,
+} from 'shared'
 import { onMounted, reactive, ref } from 'vue'
 import { api } from '../lib/api.ts'
 import { formatDuration, STATUS_LABELS } from '../lib/format.ts'
@@ -96,12 +101,12 @@ async function pair() {
       <h2>1. Audio files</h2>
       <p class="muted small">
         .wav, .mp3 or .m4a, one or many. Each file is validated by its content; duration is read on
-        the server. Recordings of 15 seconds or less are auto-rejected.
+        the server. Recordings of {{ MAX_AUTO_REJECT_SEC }} seconds or less are auto-rejected.
       </p>
       <input
         type="file"
         multiple
-        accept=".wav,.mp3,.m4a"
+        :accept="AUDIO_ACCEPT"
         :disabled="uploading"
         @change="uploadAudio"
       />

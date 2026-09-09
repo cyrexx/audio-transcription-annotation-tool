@@ -7,12 +7,6 @@ import { decodeWav } from './wav.ts'
 
 export type AudioKind = 'wav' | 'mp3' | 'm4a'
 
-export const AUDIO_EXTENSIONS: Record<string, AudioKind> = {
-  '.wav': 'wav',
-  '.mp3': 'mp3',
-  '.m4a': 'm4a',
-}
-
 export const MIME_TYPES: Record<AudioKind, string> = {
   wav: 'audio/wav',
   mp3: 'audio/mpeg',

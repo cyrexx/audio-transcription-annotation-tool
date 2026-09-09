@@ -19,7 +19,7 @@ export class ApiRequestError extends Error {
 async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`/api${path}`, init)
   if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: res.statusText }))
+    const body: { error?: string } = await res.json().catch(() => ({}))
     throw new ApiRequestError(res.status, body.error ?? res.statusText)
   }
   return res.status === 204 ? (undefined as T) : res.json()

@@ -18,7 +18,7 @@
     "db:reset": "yarn workspace server db:reset",
     "test": "vitest run",
     "test:unit": "vitest run --project \"!*integration*\"",
-    "typecheck": "yarn workspaces foreach -A run typecheck",
+    "typecheck": "tsc -p tsconfig.json && yarn workspaces foreach -A run typecheck",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -27,6 +27,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
+    "@types/node": "^26.5.0",
     "concurrently": "^10.0.5",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",

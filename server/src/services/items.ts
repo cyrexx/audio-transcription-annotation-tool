@@ -124,7 +124,7 @@ export function link(itemId: string, transcript: Transcript) {
   })
 }
 
-export function toSummary(item: Item): ItemSummary {
+function toSummary(item: Item): ItemSummary {
   return {
     id: item.id,
     filename: item.filename,
@@ -136,7 +136,7 @@ export function toSummary(item: Item): ItemSummary {
   }
 }
 
-export function toDetail(item: ItemWithRelations): ItemDetail {
+function toDetail(item: ItemWithRelations): ItemDetail {
   return {
     ...toSummary(item),
     transcript: item.transcript

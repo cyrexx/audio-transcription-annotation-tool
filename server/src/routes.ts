@@ -1,14 +1,12 @@
-import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 import { Router, type RequestHandler } from 'express'
 import multer, { MulterError } from 'multer'
-import { annotationUpdateSchema } from 'shared'
+import { annotationUpdateSchema, isAudioExtension } from 'shared'
 import { z } from 'zod'
-import { AUDIO_EXTENSIONS } from './audio/analyze.ts'
 import { config } from './config.ts'
 import { HttpError } from './errors.ts'
 import { exportRecords } from './services/export.ts'
-import { importTranscripts, ingestAudio, pairingState } from './services/ingest.ts'
+import { importTranscripts, ingestAudio, pairingState, storedName } from './services/ingest.ts'
 import {
   getItem,
   getItemRow,
@@ -22,13 +20,12 @@ import {
 const upload = multer({
   storage: multer.diskStorage({
     destination: config.storageDir,
-    filename: (_req, file, cb) =>
-      cb(null, `${randomUUID()}${path.extname(file.originalname).toLowerCase()}`),
+    filename: (_req, file, cb) => cb(null, storedName(file.originalname)),
   }),
   limits: { fileSize: config.maxUploadBytes, files: 1 },
   fileFilter: (_req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase()
-    if (ext in AUDIO_EXTENSIONS) cb(null, true)
+    if (isAudioExtension(ext)) cb(null, true)
     else
       cb(new HttpError(415, `Unsupported file type ${ext || '(none)'}; upload .wav, .mp3 or .m4a`))
   },

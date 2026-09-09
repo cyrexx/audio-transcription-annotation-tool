@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { rm } from 'node:fs/promises'
 import path from 'node:path'
 import {
@@ -12,6 +13,10 @@ import { prisma } from '../db.ts'
 import { HttpError } from '../errors.ts'
 import { MalformedTranscriptError, parseTranscriptJson } from '../ingest/transcriptParser.ts'
 import { link } from './items.ts'
+
+/** Name a file gets in the storage directory: unguessable, with the original extension kept. */
+export const storedName = (originalName: string) =>
+  `${randomUUID()}${path.extname(originalName).toLowerCase()}`
 
 export interface StoredUpload {
   /** Absolute path of the file multer wrote into the storage directory. */
@@ -78,6 +83,8 @@ async function registerAudio(file: StoredUpload): Promise<AudioUploadResult> {
   }
 }
 
+export const ALREADY_IMPORTED = 'Duplicate path, already imported earlier'
+
 /** Each accepted row costs a few queries; a file past this is not a transcript upload. */
 const MAX_TRANSCRIPT_ROWS = 10_000
 
@@ -105,7 +112,7 @@ export async function importTranscripts(text: string): Promise<TranscriptImportR
       report.rejected.push({
         row: row.row,
         path: row.path,
-        reason: 'Duplicate path, already imported earlier',
+        reason: ALREADY_IMPORTED,
       })
       continue
     }

@@ -3,21 +3,23 @@
  * exercises the real validation, routing and pairing logic. Safe to run twice.
  */
 import { copyFile, mkdir, readdir, readFile, stat } from 'node:fs/promises'
-import { randomUUID } from 'node:crypto'
 import path from 'node:path'
-import { AUDIO_EXTENSIONS } from '../src/audio/analyze.ts'
+import { isAudioExtension } from 'shared'
 import { config } from '../src/config.ts'
 import { prisma } from '../src/db.ts'
 import { HttpError } from '../src/errors.ts'
-import { importTranscripts, ingestAudio } from '../src/services/ingest.ts'
+import {
+  ALREADY_IMPORTED,
+  importTranscripts,
+  ingestAudio,
+  storedName,
+} from '../src/services/ingest.ts'
 
 const DEMO_DIR = path.resolve(import.meta.dirname, '../../demo')
 
 async function seedAudio() {
   const audioDir = path.join(DEMO_DIR, 'audio')
-  const files = (await readdir(audioDir))
-    .filter((f) => path.extname(f).toLowerCase() in AUDIO_EXTENSIONS)
-    .sort()
+  const files = (await readdir(audioDir)).filter((f) => isAudioExtension(path.extname(f))).sort()
   if (files.length === 0) console.log('No audio files in demo/audio; nothing to seed')
 
   for (const filename of files) {
@@ -26,10 +28,7 @@ async function seedAudio() {
       continue
     }
     const source = path.join(audioDir, filename)
-    const stored = path.join(
-      config.storageDir,
-      `${randomUUID()}${path.extname(filename).toLowerCase()}`,
-    )
+    const stored = path.join(config.storageDir, storedName(filename))
     await copyFile(source, stored)
     try {
       const result = await ingestAudio({
@@ -49,7 +48,7 @@ async function seedTranscripts() {
   const report = await importTranscripts(
     await readFile(path.join(DEMO_DIR, 'transcripts.json'), 'utf8'),
   )
-  const known = report.rejected.filter((row) => row.reason.includes('already imported'))
+  const known = report.rejected.filter((row) => row.reason === ALREADY_IMPORTED)
   const bad = report.rejected.filter((row) => !known.includes(row))
   console.log(
     `transcripts.json: ${report.accepted.length} accepted, ${known.length} already seeded, ${bad.length} rejected`,

@@ -91,7 +91,6 @@ type Finalized<T> = T extends { type: 'MEASUREMENT'; attributes: infer A }
 
 /** A stored span: input plus derived attributes. */
 export type Span = Finalized<SpanInput> & { id: string }
-export type SpanAttributes = Span['attributes']
 
 /** Adds attributes the annotator does not enter by hand. */
 export function finalizeSpan(span: SpanInput): Finalized<SpanInput> {

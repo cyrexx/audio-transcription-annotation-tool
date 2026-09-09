@@ -14,7 +14,7 @@ import {
   type SpanType,
 } from 'shared'
 import { computed, nextTick, ref, useId, useTemplateRef, watch } from 'vue'
-import type { EditorSpan } from './TranscriptEditor.vue'
+import type { EditorSpan } from '../lib/spans.ts'
 
 const props = defineProps<{
   selection: { start: number; end: number }

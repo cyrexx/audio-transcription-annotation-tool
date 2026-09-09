@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { tokenize, type Span, type SpanInput } from 'shared'
+import type { Token } from 'shared'
 import { computed, ref } from 'vue'
-
-type EditorSpan = SpanInput & { id: string }
+import { coveringSpans, type EditorSpan } from '../lib/spans.ts'
 
 const props = defineProps<{
   text: string
+  tokens: Token[]
   spans: EditorSpan[]
   mode: 'edit' | 'annotate'
   selection: { start: number; end: number } | null
@@ -20,16 +20,8 @@ const emit = defineEmits<{
   select: [start: number, end: number, forceNew: boolean]
 }>()
 
-const tokens = computed(() => tokenize(props.text))
-
 /** Spans covering each token, innermost first, so the tightest span decides the colour. */
-const coverage = computed(() =>
-  tokens.value.map((_, i) =>
-    props.spans
-      .filter((s) => s.start <= i && i < s.end)
-      .sort((a, b) => a.end - a.start - (b.end - b.start)),
-  ),
-)
+const coverage = computed(() => props.tokens.map((_, i) => coveringSpans(props.spans, i)))
 
 function tokenStyle(i: number) {
   const [inner, outer] = coverage.value[i]
@@ -62,6 +54,11 @@ function inDrag(i: number): boolean {
   return Math.min(anchor.value, hover.value) <= i && i <= Math.max(anchor.value, hover.value)
 }
 
+function cancelDrag() {
+  anchor.value = null
+  hover.value = null
+}
+
 function startDrag(i: number) {
   anchor.value = i
   hover.value = i
@@ -81,9 +78,6 @@ function onMouseUp(i: number, event: MouseEvent) {
     emit('select', Math.min(from, i), Math.max(from, i) + 1, false)
   }
 }
-
-defineExpose({ tokens })
-export type { EditorSpan, Span }
 </script>
 
 <template>
@@ -95,7 +89,7 @@ export type { EditorSpan, Span }
     @input="emit('update:text', ($event.target as HTMLTextAreaElement).value)"
   ></textarea>
   <p v-else-if="tokens.length === 0" class="muted">The corrected transcript is empty.</p>
-  <p v-else class="tokens" @mouseleave="((anchor = null), (hover = null))">
+  <p v-else class="tokens" @mouseleave="cancelDrag">
     <template v-for="(token, i) in tokens" :key="i">
       <span
         class="tok"

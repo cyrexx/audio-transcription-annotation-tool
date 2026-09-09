@@ -81,7 +81,7 @@ model Item {
 /// One row of an uploaded transcript file, or one pasted transcript. Immutable.
 model Transcript {
   id       String           @id @default(uuid(7))
-  /// Path exactly as given in the upload, for example "audio/880_NTX.wav".
+  /// Path as given in the uploaded file, for example "audio/880_NTX.wav"; the item's filename for pasted text.
   path     String
   /// Basename of `path`; pairing matches it against Item.filename.
   filename String

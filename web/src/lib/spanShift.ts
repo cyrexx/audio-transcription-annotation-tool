@@ -52,7 +52,7 @@ function mapBoundary(position: number, hunks: Hunk[], isStart: boolean): number 
 }
 
 /** Replaced regions between two token lists, in order, from a longest-common-subsequence alignment. */
-export function diffHunks(oldTokens: readonly string[], newTokens: readonly string[]): Hunk[] {
+function diffHunks(oldTokens: readonly string[], newTokens: readonly string[]): Hunk[] {
   // Trim the common prefix and suffix first: a keystroke then leaves a one-token problem.
   const shortest = Math.min(oldTokens.length, newTokens.length)
   let prefix = 0

@@ -4,7 +4,6 @@ import { formatDuration } from '../lib/format.ts'
 import { JUMP_FAR_SEC, JUMP_SEC } from '../lib/shortcuts.ts'
 
 const props = defineProps<{ src: string; duration: number }>()
-const emit = defineEmits<{ time: [seconds: number] }>()
 
 const RATES = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
 
@@ -39,7 +38,6 @@ function setRate(value: number) {
 
 function onTime() {
   currentTime.value = audio.value?.currentTime ?? 0
-  emit('time', currentTime.value)
 }
 
 defineExpose({ toggle, seek, jump, changeRate })

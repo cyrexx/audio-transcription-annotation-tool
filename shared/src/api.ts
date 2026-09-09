@@ -74,7 +74,3 @@ export interface PairingState {
   items: { id: string; filename: string; durationSec: number }[]
   transcripts: { id: string; path: string; filename: string; preview: string }[]
 }
-
-export interface ApiError {
-  error: string
-}

@@ -1,7 +1,7 @@
 import path from 'node:path'
 
-// Every entry point (server, seed, Prisma config) imports this module first, so the version
-// check runs before anything that would fail cryptically on an older Node.
+// Server, seed and Prisma config all import this module, and the check runs before the
+// loadEnvFile call below, which is what an older Node would trip over first.
 const nodeMajor = Number(process.versions.node.split('.')[0])
 if (nodeMajor < 22) {
   console.error(

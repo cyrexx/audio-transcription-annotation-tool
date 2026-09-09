@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  MAX_AUTO_REJECT_SEC,
   SPAN_TYPES,
   tokenize,
   type AnnotationUpdate,
@@ -14,12 +15,13 @@ import ConditionsPanel from '../components/ConditionsPanel.vue'
 import ShortcutHelp from '../components/ShortcutHelp.vue'
 import SpanForm from '../components/SpanForm.vue'
 import SpanList from '../components/SpanList.vue'
-import TranscriptEditor, { type EditorSpan } from '../components/TranscriptEditor.vue'
+import TranscriptEditor from '../components/TranscriptEditor.vue'
 import { useAnnotatorName } from '../lib/annotatorName.ts'
 import { api } from '../lib/api.ts'
 import { STATUS_LABELS } from '../lib/format.ts'
 import { matchShortcut, matchSpanType, JUMP_FAR_SEC, JUMP_SEC } from '../lib/shortcuts.ts'
 import { shiftSpans } from '../lib/spanShift.ts'
+import { innermostSpanAt, type EditorSpan } from '../lib/spans.ts'
 import { estimateTokenTime } from '../lib/timestamps.ts'
 
 const props = defineProps<{ id: string }>()
@@ -155,11 +157,9 @@ function onTokenClick(index: number) {
   const token = tokens.value[index]
   if (item.value)
     player.value?.seek(estimateTokenTime(token.start, text.value.length, item.value.durationSec))
-  const covering = spans.value
-    .filter((s) => s.start <= index && index < s.end)
-    .sort((a, b) => a.end - a.start - (b.end - b.start))
-  activeSpanId.value = covering[0]?.id ?? null
-  selection.value = covering[0] ? null : { start: index, end: index + 1 }
+  const covering = innermostSpanAt(spans.value, index)
+  activeSpanId.value = covering?.id ?? null
+  selection.value = covering ? null : { start: index, end: index + 1 }
 }
 
 /** Dragging exactly over an existing span opens it instead of offering a duplicate. */
@@ -314,8 +314,8 @@ const SAVE_LABELS = {
     </div>
 
     <p v-if="item.status === 'AUTO_REJECTED'" class="panel muted">
-      Auto-rejected: the recording is 15 seconds or shorter and is not routed to an annotator.
-      Read-only.
+      Auto-rejected: the recording is {{ MAX_AUTO_REJECT_SEC }} seconds or shorter and is not routed
+      to an annotator. Read-only.
     </p>
 
     <AudioPlayer ref="player" :src="api.audioUrl(item.id)" :duration="item.durationSec" />
@@ -371,6 +371,7 @@ const SAVE_LABELS = {
             </div>
             <TranscriptEditor
               :text="text"
+              :tokens="tokens"
               :spans="spans"
               :mode="mode"
               :selection="selection"
