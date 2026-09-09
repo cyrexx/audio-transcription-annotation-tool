@@ -24,6 +24,8 @@ import { estimateTokenTime } from '../lib/timestamps.ts'
 const props = defineProps<{ id: string }>()
 
 const AUTOSAVE_MS = 800
+/** After a failed save (API restarting, network blip) try again without the user doing anything. */
+const RETRY_MS = 5000
 
 const item = ref<ItemDetail | null>(null)
 const loadError = ref('')
@@ -108,12 +110,26 @@ async function save(status?: 'IN_PROGRESS' | 'DONE') {
     )
     item.value = { ...item.value, status: saved.status, annotator: saved.annotator }
     lastSaved = snapshot
-    saveState.value = 'saved'
-    if (serialized.value !== snapshot) timer = setTimeout(() => void save(), AUTOSAVE_MS)
+    if (serialized.value === snapshot) {
+      saveState.value = 'saved'
+    } else {
+      // Edits arrived while the request was in flight; they are not saved yet.
+      saveState.value = 'dirty'
+      timer = setTimeout(() => void save(), AUTOSAVE_MS)
+    }
   } catch (e) {
     saveState.value = 'error'
     saveError.value = (e as Error).message
+    timer = setTimeout(() => void save(status), RETRY_MS)
   }
+}
+
+const unsaved = () =>
+  saveState.value === 'dirty' || saveState.value === 'saving' || saveState.value === 'error'
+
+/** The browser shows its own "leave page?" dialog while a save is pending or failed. */
+function onBeforeUnload(event: BeforeUnloadEvent) {
+  if (unsaved()) event.preventDefault()
 }
 
 // Editing -------------------------------------------------------------------------------
@@ -226,12 +242,14 @@ function onKeydown(event: KeyboardEvent) {
 
 onMounted(() => {
   window.addEventListener('keydown', onKeydown)
+  window.addEventListener('beforeunload', onBeforeUnload)
   void load()
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown)
-  if (saveState.value === 'dirty') void save()
+  window.removeEventListener('beforeunload', onBeforeUnload)
+  if (saveState.value === 'dirty' || saveState.value === 'error') void save()
 })
 
 const SAVE_LABELS = {
