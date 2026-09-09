@@ -22,20 +22,21 @@ See [DESIGN.md](DESIGN.md) for the data model, trade-offs and what was cut.
 git clone https://github.com/cyrexx/audio-transcription-annotation-tool.git
 cd audio-transcription-annotation-tool
 corepack enable            # once per machine, makes `yarn` available
-docker compose up -d       # PostgreSQL on localhost:5432
-yarn install               # dependencies, generates the Prisma client
-yarn setup                 # database migration and demo seed
-yarn dev                   # API on :3000, web app on http://localhost:5173
+docker compose up -d --wait   # PostgreSQL on 127.0.0.1:5432, waits until it accepts connections
+yarn install               # dependencies, generates the Prisma client; Corepack asks once to download Yarn: answer Y
+yarn dev                   # applies the migration, seeds the demo, starts API :3000 and web app http://localhost:5173
 ```
 
 Open <http://localhost:5173>. Everything is configured with working defaults; copy
-`server/.env.example` to `server/.env` only if you need to change a port, the storage folder or
-the upload limit.
+`server/.env.example` to `server/.env` only if you need to change the database URL, the storage
+folder or the upload limit. The API port is also fixed in `web/vite.config.ts` (proxy target), so
+change both if you change `PORT`.
 
 ## Demo path (about five minutes)
 
-`yarn setup` seeds the recordings in `demo/audio` and the transcripts in `demo/transcripts.json`
-through the real ingest code, so the queue is populated on first start. One recording,
+`yarn dev` seeds the recordings in `demo/audio` and the transcripts in `demo/transcripts.json`
+through the real ingest code on every start (both steps are idempotent), so the queue is populated
+on first start. One recording,
 `demo/upload/002_tur_prostata.wav`, is deliberately left out of the seed: its transcript row is
 already waiting, and you upload the audio yourself in step 8. Every step below names the exact
 value to enter. The transcripts contain deliberate recognition errors for you to correct, and no
@@ -131,7 +132,7 @@ docs/     implementation plan and decision log
 - **Port 5432 already in use**: stop the other PostgreSQL, or change the host port in
   `docker-compose.yml` and set `DATABASE_URL` in `server/.env` to match.
 - **`yarn: command not found`**: run `corepack enable` (Node 22 ships corepack).
-- **"Can't reach database server" during `yarn setup` or the tests**: `docker compose up -d` must be
+- **"Can't reach database server" during `yarn dev` or the tests**: `docker compose up -d` must be
   running; the test database `annotation_test` is created automatically the first time the volume
   is initialised.
 - **Uploaded mp3/m4a shows "ffmpeg not found"**: install ffmpeg or set `FFMPEG_PATH`.

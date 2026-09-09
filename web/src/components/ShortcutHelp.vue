@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SHORTCUTS } from '../lib/shortcuts.ts'
+import { OTHER_SHORTCUTS, SHORTCUTS } from '../lib/shortcuts.ts'
 </script>
 
 <template>
@@ -9,6 +9,12 @@ import { SHORTCUTS } from '../lib/shortcuts.ts'
       <table>
         <tbody>
           <tr v-for="s in SHORTCUTS" :key="s.action">
+            <td>
+              <kbd>{{ s.keys }}</kbd>
+            </td>
+            <td>{{ s.label }}</td>
+          </tr>
+          <tr v-for="s in OTHER_SHORTCUTS" :key="s.keys">
             <td>
               <kbd>{{ s.keys }}</kbd>
             </td>

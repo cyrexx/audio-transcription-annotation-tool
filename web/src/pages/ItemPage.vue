@@ -258,6 +258,7 @@ function onKeydown(event: KeyboardEvent) {
   else if (action === 'slower') p?.changeRate(-1)
   else if (action === 'faster') p?.changeRate(1)
   else if (action === 'toggleMode') toggleMode()
+  else if (action === 'toStart') p?.seek(0)
   else if (action === 'save') void save()
 }
 
@@ -380,9 +381,9 @@ const SAVE_LABELS = {
               @select="onSelect"
             />
           </section>
-
-          <ShortcutHelp />
         </template>
+
+        <ShortcutHelp />
       </div>
 
       <div class="stack">

@@ -1,5 +1,6 @@
 export type PlayerAction =
   | 'togglePlay'
+  | 'toStart'
   | 'back'
   | 'forward'
   | 'backFar'
@@ -42,12 +43,14 @@ export const SHORTCUTS: Shortcut[] = [
   define('forwardFar', 'Alt+Shift+L', 'KeyL', `Jump forward ${JUMP_FAR_SEC} s`),
   define('slower', 'Alt+,', 'Comma', 'Slower'),
   define('faster', 'Alt+.', 'Period', 'Faster'),
+  define('toStart', 'Alt+0', 'Digit0', 'Seek to the start'),
   define('toggleMode', 'Alt+E', 'KeyE', 'Switch between edit and annotate'),
   define('save', 'Ctrl+S', 'KeyS', 'Save now'),
 ]
 
-/** Keys that act inside the span form; matched in the item page, listed here for the help panel. */
-export const FORM_SHORTCUTS = [
+/** Keys handled elsewhere (browser defaults or the span form), listed for the help panel. */
+export const OTHER_SHORTCUTS = [
+  { keys: 'Tab, then ← →', label: 'Seek with the slider in small steps' },
   { keys: 'Alt+1 … Alt+6', label: 'Choose the span type, in the order of the buttons' },
   { keys: 'Enter', label: 'Add or update the span' },
   { keys: 'Esc', label: 'Close the span form' },

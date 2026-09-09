@@ -41,9 +41,9 @@ describe('pairing', () => {
     ]).expect(200)
     expect(body.accepted.map((a: { path: string }) => a.path)).toEqual(['good.wav'])
     expect(body.rejected).toEqual([
-      { index: 1, path: 'missing-label.wav', reason: 'Missing "label"' },
-      { index: 2, path: 'good.wav', reason: 'Duplicate path, first seen in row 0' },
-      { index: 3, path: 'old.wav', reason: 'Duplicate path, already imported earlier' },
+      { row: 2, path: 'missing-label.wav', reason: 'Missing "label"' },
+      { row: 3, path: 'good.wav', reason: 'Duplicate path, first seen in row 1' },
+      { row: 4, path: 'old.wav', reason: 'Duplicate path, already imported earlier' },
     ])
   })
 

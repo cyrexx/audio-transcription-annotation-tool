@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { PairingState, TranscriptImportReport } from 'shared'
-import { onMounted, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { api } from '../lib/api.ts'
 import { formatDuration, STATUS_LABELS } from '../lib/format.ts'
 
 interface UploadRow {
+  id: number
   filename: string
   result: string
   itemId?: string
@@ -12,6 +13,7 @@ interface UploadRow {
 }
 
 const uploads = ref<UploadRow[]>([])
+let nextUploadId = 1
 const uploading = ref(false)
 const report = ref<TranscriptImportReport | null>(null)
 const transcriptError = ref('')
@@ -40,7 +42,12 @@ async function uploadAudio(event: Event) {
   input.value = ''
   uploading.value = true
   for (const file of files) {
-    const row: UploadRow = { filename: file.name, result: 'uploading…' }
+    // reactive, because the verdict is written into the row after it is on screen
+    const row = reactive<UploadRow>({
+      id: nextUploadId++,
+      filename: file.name,
+      result: 'uploading…',
+    })
     uploads.value.unshift(row)
     try {
       const res = await api.uploadAudio(file)
@@ -99,7 +106,7 @@ async function pair() {
         @change="uploadAudio"
       />
       <ul v-if="uploads.length" class="plain small">
-        <li v-for="row in uploads" :key="row.filename + row.result + row.error">
+        <li v-for="row in uploads" :key="row.id">
           <RouterLink v-if="row.itemId" :to="`/items/${row.itemId}`">{{ row.filename }}</RouterLink>
           <span v-else>{{ row.filename }}</span>
           <span v-if="row.error" class="error"> — rejected: {{ row.error }}</span>
@@ -123,8 +130,8 @@ async function pair() {
           {{ report.accepted.filter((a) => a.pairedItemId).length }} paired with audio.
         </p>
         <ul v-if="report.rejected.length" class="plain">
-          <li v-for="r in report.rejected" :key="r.index" class="error">
-            Row {{ r.index }}<span v-if="r.path"> ({{ r.path }})</span>: {{ r.reason }}
+          <li v-for="r in report.rejected" :key="r.row" class="error">
+            Row {{ r.row }}<span v-if="r.path"> ({{ r.path }})</span>: {{ r.reason }}
           </li>
         </ul>
       </div>

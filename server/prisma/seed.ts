@@ -54,7 +54,7 @@ async function seedTranscripts() {
   console.log(
     `transcripts.json: ${report.accepted.length} accepted, ${known.length} already seeded, ${bad.length} rejected`,
   )
-  for (const row of bad) console.log(`  row ${row.index} (${row.path}): ${row.reason}`)
+  for (const row of bad) console.log(`  row ${row.row} (${row.path}): ${row.reason}`)
 }
 
 try {

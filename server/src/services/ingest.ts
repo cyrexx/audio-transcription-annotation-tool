@@ -103,7 +103,7 @@ export async function importTranscripts(text: string): Promise<TranscriptImportR
     const known = await prisma.transcript.findFirst({ where: { path: row.path } })
     if (known) {
       report.rejected.push({
-        index: row.index,
+        row: row.row,
         path: row.path,
         reason: 'Duplicate path, already imported earlier',
       })
@@ -123,7 +123,7 @@ export async function importTranscripts(text: string): Promise<TranscriptImportR
     })
   }
 
-  report.rejected.sort((a, b) => a.index - b.index)
+  report.rejected.sort((a, b) => a.row - b.row)
   return report
 }
 

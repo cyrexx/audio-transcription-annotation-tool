@@ -54,9 +54,10 @@ const type = ref<SpanType>('MEDICAL_TERM')
 const attrs = ref<Attrs>({ ...DEFAULTS.MEDICAL_TERM })
 const error = ref('')
 
+// A new selection or a different span starts the form over; resizing the open span keeps it.
 watch(
-  () => props.span,
-  (span) => {
+  () => [props.span, props.span ? null : props.selection] as const,
+  ([span]) => {
     type.value = span?.type ?? 'MEDICAL_TERM'
     attrs.value = { ...DEFAULTS[type.value], ...(span?.attributes as Attrs | undefined) }
     error.value = ''

@@ -17,6 +17,7 @@ describe('matchShortcut', () => {
     expect(matchShortcut(key('KeyJ', { altKey: true }))).toBe('back')
     expect(matchShortcut(key('KeyJ', { altKey: true, shiftKey: true }))).toBe('backFar')
     expect(matchShortcut(key('KeyS', { ctrlKey: true }))).toBe('save')
+    expect(matchShortcut(key('Digit0', { altKey: true }))).toBe('toStart')
   })
 
   it('ignores combinations that include the Command key', () => {

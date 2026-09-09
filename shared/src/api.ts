@@ -65,7 +65,8 @@ export interface AudioUploadResult {
 
 export interface TranscriptImportReport {
   accepted: { transcriptId: string; path: string; pairedItemId: string | null }[]
-  rejected: { index: number; path: string | null; reason: string }[]
+  /** `row` is 1-based, as a person counts rows in the file. */
+  rejected: { row: number; path: string | null; reason: string }[]
 }
 
 /** Both sides of the pairing view: what has no partner yet. */

@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 
 /**
  * Smoke test over the seeded demo data: open the queue, annotate an item, mark it done, export.
- * Requires `yarn setup` (or `yarn db:seed`) to have run. It only touches words the README demo
+ * Requires the demo seed (`yarn dev` runs it; so does `yarn db:seed`). It only touches words the README demo
  * path never annotates and restores the item from a snapshot even when it fails, so it can run
  * before or after a manual walk-through; the one trace it leaves is a Pending item becoming
  * In progress.
@@ -10,7 +10,7 @@ import { expect, test, type Page } from '@playwright/test'
 test('annotates a seeded item and finds it in the export', async ({ page }) => {
   const items = await (await page.request.get('/api/items')).json()
   const seeded = items.find((i: { filename: string }) => i.filename === '001_leistenhernie.wav')
-  expect(seeded, 'demo item missing: run yarn setup first').toBeTruthy()
+  expect(seeded, 'demo item missing: run yarn db:seed first').toBeTruthy()
   const wasDone = seeded.status === 'DONE'
   const previousAnnotator: string = seeded.annotator ?? ''
   const before = await (await page.request.get(`/api/items/${seeded.id}`)).json()

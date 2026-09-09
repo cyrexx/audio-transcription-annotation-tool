@@ -3,14 +3,15 @@
  * Every row is either accepted or rejected with a reason; nothing is dropped silently.
  */
 export interface TranscriptRow {
-  index: number
+  /** 1-based position in the uploaded file, as a person counts rows. */
+  row: number
   path: string
   filename: string
   label: string
 }
 
 export interface RejectedRow {
-  index: number
+  row: number
   path: string | null
   reason: string
 }
@@ -42,21 +43,22 @@ export function parseTranscriptJson(text: string): ParsedTranscripts {
   const rejected: RejectedRow[] = []
   const seen = new Map<string, number>()
 
-  parsed.forEach((entry: unknown, index) => {
+  parsed.forEach((entry: unknown, i) => {
+    const row = i + 1
     const reason = validate(entry)
     if (reason) {
       const path = isRecord(entry) && typeof entry.path === 'string' ? entry.path : null
-      rejected.push({ index, path, reason })
+      rejected.push({ row, path, reason })
       return
     }
     const { path, label } = entry as { path: string; label: string }
-    const firstIndex = seen.get(path)
-    if (firstIndex !== undefined) {
-      rejected.push({ index, path, reason: `Duplicate path, first seen in row ${firstIndex}` })
+    const firstRow = seen.get(path)
+    if (firstRow !== undefined) {
+      rejected.push({ row, path, reason: `Duplicate path, first seen in row ${firstRow}` })
       return
     }
-    seen.set(path, index)
-    rows.push({ index, path, filename: basename(path), label })
+    seen.set(path, row)
+    rows.push({ row, path, filename: basename(path), label })
   })
 
   return { rows, rejected }

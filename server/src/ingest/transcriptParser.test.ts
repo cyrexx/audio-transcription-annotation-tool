@@ -12,12 +12,12 @@ describe('parseTranscriptJson', () => {
     expect(rejected).toEqual([])
     expect(rows).toEqual([
       {
-        index: 0,
+        row: 1,
         path: 'audio/880_NTX.wav',
         filename: '880_NTX.wav',
         label: 'Kontrollierte Rueckenlagerung',
       },
-      { index: 1, path: '881_TUR.wav', filename: '881_TUR.wav', label: '' },
+      { row: 2, path: '881_TUR.wav', filename: '881_TUR.wav', label: '' },
     ])
   })
 
@@ -42,11 +42,11 @@ describe('parseTranscriptJson', () => {
     )
     expect(rows.map((r) => r.path)).toEqual(['a.wav', 'b.wav'])
     expect(rejected).toEqual([
-      { index: 1, path: null, reason: 'Missing "path"' },
-      { index: 2, path: 'c.wav', reason: 'Missing "label"' },
-      { index: 3, path: '', reason: 'Missing "path"' },
-      { index: 4, path: 'dir/', reason: '"path" has no filename' },
-      { index: 5, path: null, reason: 'Row is not an object' },
+      { row: 2, path: null, reason: 'Missing "path"' },
+      { row: 3, path: 'c.wav', reason: 'Missing "label"' },
+      { row: 4, path: '', reason: 'Missing "path"' },
+      { row: 5, path: 'dir/', reason: '"path" has no filename' },
+      { row: 6, path: null, reason: 'Row is not an object' },
     ])
   })
 
@@ -61,8 +61,8 @@ describe('parseTranscriptJson', () => {
     expect(rows).toHaveLength(1)
     expect(rows[0].label).toBe('first')
     expect(rejected.map((r) => r.reason)).toEqual([
-      'Duplicate path, first seen in row 0',
-      'Duplicate path, first seen in row 0',
+      'Duplicate path, first seen in row 1',
+      'Duplicate path, first seen in row 1',
     ])
   })
 })

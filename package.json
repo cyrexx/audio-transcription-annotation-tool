@@ -12,13 +12,12 @@
     "web"
   ],
   "scripts": {
-    "setup": "yarn db:migrate && yarn db:seed",
-    "dev": "concurrently -n server,web -c blue,green \"yarn workspace server dev\" \"yarn workspace web dev\"",
+    "dev": "yarn db:migrate && yarn db:seed && concurrently -n server,web -c blue,green \"yarn workspace server dev\" \"yarn workspace web dev\"",
     "db:migrate": "yarn workspace server db:migrate",
     "db:seed": "yarn workspace server db:seed",
     "db:reset": "yarn workspace server db:reset",
     "test": "vitest run",
-    "test:unit": "vitest run --project shared --project server:unit --project web",
+    "test:unit": "vitest run --project \"!*integration*\"",
     "typecheck": "yarn workspaces foreach -A run typecheck",
     "lint": "eslint .",
     "format": "prettier --write .",

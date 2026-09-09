@@ -9,6 +9,9 @@ type SortKey = 'filename' | 'durationSec' | 'status' | 'updatedAt'
 const items = ref<ItemSummary[]>([])
 const error = ref('')
 const statusFilter = ref<ItemStatus | 'ALL'>('ALL')
+/** Duration bounds in seconds; empty means unbounded. */
+const minSec = ref<number | ''>('')
+const maxSec = ref<number | ''>('')
 const sortKey = ref<SortKey>('updatedAt')
 const sortAsc = ref(false)
 const includeUnfinished = ref(false)
@@ -23,14 +26,25 @@ onMounted(async () => {
 
 const visible = computed(() => {
   const filtered = items.value.filter(
-    (i) => statusFilter.value === 'ALL' || i.status === statusFilter.value,
+    (i) =>
+      (statusFilter.value === 'ALL' || i.status === statusFilter.value) &&
+      (minSec.value === '' || i.durationSec >= minSec.value) &&
+      (maxSec.value === '' || i.durationSec <= maxSec.value),
   )
   const dir = sortAsc.value ? 1 : -1
   return filtered.sort((a, b) => {
-    const [x, y] = [a[sortKey.value], b[sortKey.value]]
+    const [x, y] = [sortValue(a), sortValue(b)]
     return (x < y ? -1 : x > y ? 1 : 0) * dir
   })
 })
+
+/** Status sorts in workflow order rather than alphabetically. */
+const STATUS_ORDER: ItemStatus[] = ['PENDING', 'IN_PROGRESS', 'DONE', 'AUTO_REJECTED']
+
+function sortValue(item: ItemSummary): string | number {
+  if (sortKey.value === 'status') return STATUS_ORDER.indexOf(item.status)
+  return item[sortKey.value]
+}
 
 function sortBy(key: SortKey) {
   if (sortKey.value === key) sortAsc.value = !sortAsc.value
@@ -54,10 +68,30 @@ const arrow = (key: SortKey) => (sortKey.value === key ? (sortAsc.value ? ' ↑'
         </select>
       </label>
       <label class="row small">
+        Duration
+        <input
+          v-model.number="minSec"
+          type="number"
+          min="0"
+          step="1"
+          placeholder="from s"
+          class="seconds"
+        />
+        to
+        <input
+          v-model.number="maxSec"
+          type="number"
+          min="0"
+          step="1"
+          placeholder="to s"
+          class="seconds"
+        />
+      </label>
+      <label class="row small">
         <input v-model="includeUnfinished" type="checkbox" />
         include unfinished
       </label>
-      <a :href="api.exportUrl(includeUnfinished)" download><button>Export JSONL</button></a>
+      <a class="button" :href="api.exportUrl(includeUnfinished)" download>Export JSONL</a>
     </div>
 
     <p v-if="error" class="error">{{ error }}</p>
@@ -104,3 +138,9 @@ const arrow = (key: SortKey) => (sortKey.value === key ? (sortAsc.value ? ' ↑'
     </table>
   </div>
 </template>
+
+<style scoped>
+.seconds {
+  width: 5.5rem;
+}
+</style>
