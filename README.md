@@ -9,12 +9,12 @@ See [DESIGN.md](DESIGN.md) for the data model, trade-offs and what was cut.
 
 ## Prerequisites
 
-| Tool                    | Version      | Notes                                                                                                                                                                         |
-| ----------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Node.js                 | **22** (LTS) | `.nvmrc` is provided; `nvm use` picks it up                                                                                                                                   |
-| Yarn                    | 4            | Comes with Node via `corepack enable`; no separate install                                                                                                                    |
-| Docker + Docker Compose | any recent   | Runs PostgreSQL                                                                                                                                                               |
-| ffmpeg                  | optional     | Only for the microphone-distance estimate of **mp3/m4a** files. WAV never needs it. Without ffmpeg those items show "not available" and the annotator sets the value by hand. |
+| Tool    | Version      | Notes                                                                                                                                                                         |
+| ------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Node.js | **22** (LTS) | From [nodejs.org](https://nodejs.org) or a version manager; `.nvmrc` is provided, so `nvm use` picks 22. Older versions stop with a clear message.                            |
+| Yarn    | 4            | Ships with Node 22 as Corepack (`corepack enable`), nothing to install. Node 25 and newer no longer bundle it: `npm install -g corepack` first.                               |
+| Docker  | Compose v2   | Docker Desktop (Windows, macOS) or Docker Engine (Linux) with the `docker compose` command. Runs PostgreSQL.                                                                  |
+| ffmpeg  | optional     | Only for the microphone-distance estimate of **mp3/m4a** files. WAV never needs it. Without ffmpeg those items show "not available" and the annotator sets the value by hand. |
 
 ## Install and run
 
@@ -44,13 +44,14 @@ punctuation on purpose: dictated commands such as "Punkt" or "neue Zeile" arrive
 first-pass transcript, and marking them is what FORMATTING_COMMAND spans are for.
 
 1. **Queue** (home page). Two items: `001_leistenhernie.wav` is over 15 s and _Pending_,
-   `003_kurznotiz.wav` is under 15 s and _Auto-rejected_. Choose _Pending_ in the _Status_ filter,
-   then click the _Duration_ column header to sort.
+   `003_kurznotiz.wav` is under 15 s and _Auto-rejected_. Click the _Duration_ column header to
+   sort, then filter: _Pending_ in _Status_, or `15` in the duration _from_ field.
 2. Click **001_leistenhernie.wav**. Type your name into the _Annotator_ box in the header; it is
    saved with the item.
 3. **Player.** Press **Alt+K** to play and pause, **Alt+J** / **Alt+L** to jump 3 s, **Alt+,** /
-   **Alt+.** to change speed. Click any word to jump the audio near it. Expand _Keyboard shortcuts
-   and mouse actions_ at the bottom of the transcript for the full list.
+   **Alt+.** to change speed, **Alt+0** to return to the start. Click any word to jump the audio
+   near it (this also selects the word for a span; _Esc_ closes the form). Expand _Keyboard
+   shortcuts and mouse actions_ at the bottom of the left column for the full list.
 4. **Correct the text.** Click _Edit text_ (or press **Alt+E**). Change `Cefuroxin` to
    `Cefuroxim`, `Leisten Hernie` to `Leistenhernie`, and `Proleen` to `Prolene`. Click _Annotate_
    to return. There is no save button: every change is saved about a second after you make it,
@@ -88,20 +89,21 @@ first-pass transcript, and marking them is what FORMATTING_COMMAND spans are for
    and a valid row whose audio does not exist. The accepted rows join
    `audio/004_nephrektomie.wav` in _Transcripts without audio_, where the grey text is the start of
    each transcript. Upload any `.wav`, `.mp3` or `.m4a` of your own to pair one manually with
-   _Pair selected_; a `.txt` or a renamed non-audio file is rejected with a reason. An item
-   without transcript also accepts a pasted transcript on its page.
+   _Pair selected_. A renamed non-audio file is rejected with a reason (the picker lists only
+   audio types; choose "All files" to try a `.txt`). An item without transcript also accepts a
+   pasted transcript on its page.
 9. Open **002_tur_prostata.wav** from the verdict link or the queue for the remaining type: drag
    from `C` to `M` in `C wie Caesar E F U R O X I M`, choose _SPELLED OUT_, resolved word
    `Cefuroxim`, click _Add span_. Also mark `Universitaetsklinikum Essen` as
    _NAMED ENTITY / organisation_ and `zwanzig Scharrier` as _MEASUREMENT_ `20` `Ch` after
-   correcting `Scharrier` to `Charriere`.
+   correcting `Scharrier` to `Charriere` and `Neurologie` to `Urologie` in _Edit text_.
 
 ## Tests
 
 ```bash
 yarn test          # unit + integration (integration needs the compose database running)
 yarn test:unit     # unit tests only
-yarn playwright install chromium   # once, before the first end-to-end run
+yarn playwright install chromium   # once, before the first end-to-end run (Linux/WSL: add --with-deps, needs sudo)
 yarn test:e2e      # Playwright smoke test against a running `yarn dev`
 yarn typecheck && yarn lint
 ```
@@ -129,12 +131,29 @@ docs/     implementation plan and decision log
 
 ## Troubleshooting
 
+- **`docker compose` fails with "Cannot connect to the Docker daemon"**: start Docker Desktop
+  (or the Docker service) first.
 - **Port 5432 already in use**: stop the other PostgreSQL, or change the host port in
   `docker-compose.yml` and set `DATABASE_URL` in `server/.env` to match.
-- **`yarn: command not found`**: run `corepack enable` (Node 22 ships corepack).
-- **"Can't reach database server" during `yarn dev` or the tests**: `docker compose up -d` must be
-  running; the test database `annotation_test` is created automatically the first time the volume
-  is initialised.
+- **Port 3000 or 5173 already in use**: both servers stop with a port error instead of moving to
+  another port; free the port or change `PORT` (server) and `web/vite.config.ts` (proxy target
+  and dev port) together.
+- **`yarn: command not found`**: run `corepack enable`; with a system-wide Node it may need
+  `sudo`. Corepack asks once whether to download Yarn 4.18: answer yes.
+- **"Node 22 or newer is required"**: switch with `nvm use` (reads `.nvmrc`) or install Node 22.
+- **"Can't reach database server" during `yarn dev` or the tests**: `docker compose up -d --wait`
+  must have completed; the test database `annotation_test` is created automatically the first
+  time the volume is initialised.
 - **Uploaded mp3/m4a shows "ffmpeg not found"**: install ffmpeg or set `FFMPEG_PATH`.
-- **Start over**: `yarn db:reset` drops the database, re-applies the migration, clears uploaded
+- **Start over**: `yarn db:reset` drops the database, re-applies the migrations, clears uploaded
   files and reseeds the demo data.
+
+## How this was built
+
+I built this with Claude Code as a pair. I set the scope against the brief, made every decision
+recorded in DESIGN.md and `docs/PLAN.md`, recorded the demo audio, tested each step in the
+browser and confirmed each change before it was committed; the assistant wrote most of the code
+under the rules in CLAUDE.md, and every commit says so in its trailer. After the initial build,
+independent review rounds (security, regression, and requirements, code quality and
+documentation) were run and their findings fixed; `docs/PLAN.md` lists them. Reviewing my own
+work that way is part of how I build software, with or without an assistant.
