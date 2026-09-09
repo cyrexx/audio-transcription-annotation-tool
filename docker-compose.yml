@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: annotator
       POSTGRES_DB: annotation
     ports:
-      - '5432:5432'
+      - '127.0.0.1:5432:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
