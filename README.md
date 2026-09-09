@@ -87,10 +87,13 @@ yourself in step 8. Every step below names the exact value to enter.
      a valid row whose audio does not exist.
    - The accepted rows join `audio/004_nephrektomie.wav` in _Transcripts without audio_, where
      the grey text is the start of each transcript.
+   - **Unpair and paste:** open `003_kurznotiz.wav`, click _Unpair_ next to the original
+     transcript and confirm. The item now offers a paste box: paste
+     `Kurznotiz Patient nuechtern Praemedikation mit Midazolam siebeneinhalb Milligramm oral`
+     and click _Use as transcript_. The pasted text becomes the immutable original.
    - Optional: upload any `.wav`, `.mp3` or `.m4a` of your own, select it and a transcript, and
      click _Pair selected_. A renamed non-audio file is rejected with a reason (the picker lists
-     only audio types; choose "All files" to try a `.txt`). An item without transcript also
-     accepts a pasted transcript on its page.
+     only audio types; choose "All files" to try a `.txt`).
 9. Open **002_tur_prostata.wav** from the verdict link or the queue for the remaining type: drag
    from `C` to `M` in `C wie Caesar E F U R O X I M`, choose _SPELLED OUT_, resolved word
    `Cefuroxim`, click _Add span_. Also mark `Universitaetsklinikum Essen` as

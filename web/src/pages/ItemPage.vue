@@ -153,6 +153,7 @@ function onTokenClick(index: number) {
   const token = tokens.value[index]
   if (item.value)
     player.value?.seek(estimateTokenTime(token.start, text.value.length, item.value.durationSec))
+  if (!editable.value) return // read-only items seek on click but never open the span form
   const covering = innermostSpanAt(spans.value, index)
   activeSpanId.value = covering?.id ?? null
   selection.value = covering ? null : { start: index, end: index + 1 }
@@ -160,6 +161,7 @@ function onTokenClick(index: number) {
 
 /** Dragging exactly over an existing span opens it instead of offering a duplicate. */
 function onSelect(start: number, end: number, forceNew: boolean) {
+  if (!editable.value) return
   const existing = forceNew
     ? undefined
     : spans.value.find((s) => s.start === start && s.end === end)
@@ -310,7 +312,7 @@ const SAVE_LABELS = {
 
     <p v-if="item.status === 'AUTO_REJECTED'" class="panel muted">
       Auto-rejected: the recording is {{ MAX_AUTO_REJECT_SEC }} seconds or shorter and is not routed
-      to an annotator. Read-only.
+      to an annotator. The transcript can be paired and unpaired but not edited.
     </p>
 
     <AudioPlayer ref="player" :src="api.audioUrl(item.id)" :duration="item.durationSec" />
@@ -340,7 +342,7 @@ const SAVE_LABELS = {
             <summary class="muted">
               Original AI transcript (immutable,
               {{ item.transcript.source === 'PASTE' ? 'pasted' : item.transcript.path }})
-              <button v-if="editable" class="small unpair" @click.prevent="unpair">Unpair</button>
+              <button class="small unpair" @click.prevent="unpair">Unpair</button>
             </summary>
             <p class="original">{{ item.originalText }}</p>
           </details>
