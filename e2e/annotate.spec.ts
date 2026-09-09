@@ -1,10 +1,11 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 
 /**
  * Smoke test over the seeded demo data: open the queue, annotate an item, mark it done, export.
  * Requires `yarn setup` (or `yarn db:seed`) to have run. It only touches words the README demo
- * path never annotates and puts back what it changed, so it can run before or after a manual
- * walk-through; the one trace it leaves is a Pending item becoming In progress.
+ * path never annotates and restores the item from a snapshot even when it fails, so it can run
+ * before or after a manual walk-through; the one trace it leaves is a Pending item becoming
+ * In progress.
  */
 test('annotates a seeded item and finds it in the export', async ({ page }) => {
   const items = await (await page.request.get('/api/items')).json()
@@ -12,7 +13,26 @@ test('annotates a seeded item and finds it in the export', async ({ page }) => {
   expect(seeded, 'demo item missing: run yarn setup first').toBeTruthy()
   const wasDone = seeded.status === 'DONE'
   const previousAnnotator: string = seeded.annotator ?? ''
+  const before = await (await page.request.get(`/api/items/${seeded.id}`)).json()
 
+  try {
+    await run(page, wasDone, previousAnnotator)
+  } finally {
+    // Whatever happened above, put the item back the way it was found.
+    await page.request.put(`/api/items/${seeded.id}/annotation`, {
+      data: {
+        correctedText: before.correctedText,
+        spans: before.spans.map(({ id: _id, ...span }: { id: string }) => span),
+        speechRateWpmOverride: before.speechRateWpmOverride,
+        distanceOverride: before.distanceOverride,
+        annotator: before.annotator,
+        status: wasDone ? 'DONE' : 'IN_PROGRESS',
+      },
+    })
+  }
+})
+
+async function run(page: Page, wasDone: boolean, previousAnnotator: string) {
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Work queue' })).toBeVisible()
   await expect(page.locator('.badge.AUTO_REJECTED')).toBeVisible()
@@ -115,4 +135,4 @@ test('annotates a seeded item and finds it in the export', async ({ page }) => {
   } else {
     await expect(page.getByText('✓ Saved')).toBeVisible()
   }
-})
+}

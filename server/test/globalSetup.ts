@@ -1,9 +1,11 @@
 import { execSync } from 'node:child_process'
+import { rmSync } from 'node:fs'
 import path from 'node:path'
-import { TEST_DATABASE_URL } from './testDatabase.ts'
+import { TEST_DATABASE_URL, TEST_STORAGE_DIR } from './testEnv.ts'
 
-/** Brings the test database to the current migration state before the suite runs. */
+/** Brings the test database to the current migration state and clears uploaded test files. */
 export default function setup() {
+  rmSync(TEST_STORAGE_DIR, { recursive: true, force: true })
   try {
     execSync('yarn prisma migrate deploy', {
       cwd: path.resolve(import.meta.dirname, '..'),
