@@ -23,5 +23,5 @@ export const config = {
     process.env.DATABASE_URL ?? 'postgresql://annotator:annotator@localhost:5432/annotation',
   storageDir: path.resolve(process.env.STORAGE_DIR ?? 'storage'),
   maxUploadBytes: Number(process.env.MAX_UPLOAD_MB ?? 50) * 1024 * 1024,
-  ffmpegPath: process.env.FFMPEG_PATH ?? 'ffmpeg',
+  ffmpegPath: process.env.FFMPEG_PATH || 'ffmpeg',
 }

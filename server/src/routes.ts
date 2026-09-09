@@ -39,7 +39,8 @@ const uploadOne: RequestHandler = (req, res, next) =>
   upload.single('file')(req, res, (err: unknown) => {
     // Our own errors and system errors (disk full, permissions) keep their meaning; the rest is
     // the parser rejecting what the client sent.
-    if (!err || err instanceof HttpError || 'errno' in (err as object)) return next(err)
+    if (!err || err instanceof HttpError || (err instanceof Error && 'errno' in err))
+      return next(err)
     if (err instanceof MulterError && err.code === 'LIMIT_FILE_SIZE') {
       return next(
         new HttpError(

@@ -8,6 +8,7 @@ import {
   type SpanInput,
 } from 'shared'
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router'
 import AudioPlayer from '../components/AudioPlayer.vue'
 import ConditionsPanel from '../components/ConditionsPanel.vue'
 import ShortcutHelp from '../components/ShortcutHelp.vue'
@@ -135,6 +136,9 @@ const unsaved = () =>
 function onBeforeUnload(event: BeforeUnloadEvent) {
   if (unsaved()) event.preventDefault()
 }
+
+// In-app navigation bypasses beforeunload, so ask the same question there.
+onBeforeRouteLeave(() => !unsaved() || confirm('Unsaved changes will be lost. Leave anyway?'))
 
 // Editing -------------------------------------------------------------------------------
 
