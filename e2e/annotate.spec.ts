@@ -19,7 +19,7 @@ test('annotates a seeded item and finds it in the export', async ({ page }) => {
     await run(page, wasDone, previousAnnotator)
   } finally {
     // Whatever happened above, put the item back the way it was found.
-    await page.request.put(`/api/items/${seeded.id}/annotation`, {
+    const restored = await page.request.put(`/api/items/${seeded.id}/annotation`, {
       data: {
         correctedText: before.correctedText,
         spans: before.spans.map(({ id: _id, ...span }: { id: string }) => span),
@@ -29,6 +29,7 @@ test('annotates a seeded item and finds it in the export', async ({ page }) => {
         status: wasDone ? 'DONE' : 'IN_PROGRESS',
       },
     })
+    expect.soft(restored.ok(), 'restoring the demo item failed').toBe(true)
   }
 })
 

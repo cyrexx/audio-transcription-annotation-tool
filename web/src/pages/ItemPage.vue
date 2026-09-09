@@ -92,6 +92,8 @@ const update = computed<AnnotationUpdate>(() => ({
 const serialized = computed(() => JSON.stringify(update.value))
 let lastSaved = ''
 let timer: ReturnType<typeof setTimeout> | undefined
+/** Set on unmount: a retry from a left page must not overwrite what a newer page saved. */
+let gone = false
 
 watch(serialized, (now) => {
   if (!editable.value || now === lastSaved) return
@@ -117,12 +119,12 @@ async function save(status?: 'IN_PROGRESS' | 'DONE') {
     } else {
       // Edits arrived while the request was in flight; they are not saved yet.
       saveState.value = 'dirty'
-      timer = setTimeout(() => void save(), AUTOSAVE_MS)
+      if (!gone) timer = setTimeout(() => void save(), AUTOSAVE_MS)
     }
   } catch (e) {
     saveState.value = 'error'
     saveError.value = (e as Error).message
-    timer = setTimeout(() => void save(status), RETRY_MS)
+    if (!gone) timer = setTimeout(() => void save(status), RETRY_MS)
   }
 }
 
@@ -264,6 +266,9 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown)
   window.removeEventListener('beforeunload', onBeforeUnload)
+  gone = true
+  clearTimeout(timer)
+  // One last attempt for pending work; if it fails there is no page left to retry from.
   if (saveState.value === 'dirty' || saveState.value === 'error') void save()
 })
 
