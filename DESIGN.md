@@ -61,6 +61,9 @@ checkbox includes unfinished ones.
   without it; the page only points out when it is missing.
 - Speech rate uses the corrected transcript, the text that is exported.
 - Auto-rejected items are visible and playable but read-only.
+- Localhost is the security boundary: API, database and dev server bind to 127.0.0.1 only. Crafted
+  audio headers (absurd sample rates, non-finite durations) are rejected, level analysis stops at
+  60 minutes, and every parser failure answers with a 4xx and its reason.
 - No error rate is computed: "we compare against it to compute error rates" explains why the
   original stays immutable; the rate belongs to the evaluation pipeline and its normalization
   rules, and the export carries both transcripts for it.
