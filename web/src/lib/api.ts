@@ -38,7 +38,7 @@ export const api = {
   saveAnnotation: (id: string, update: AnnotationUpdate) =>
     call<ItemDetail>(`/items/${id}/annotation`, json('PUT', update)),
   pasteTranscript: (id: string, label: string) =>
-    call<ItemDetail>(`/items/${id}/transcript`, json('POST', { label })),
+    call<void>(`/items/${id}/transcript`, json('POST', { label })),
   pair: (id: string, transcriptId: string) =>
     call<void>(`/items/${id}/pair`, json('POST', { transcriptId })),
   unpair: (id: string) => call<void>(`/items/${id}/unpair`, { method: 'POST' }),

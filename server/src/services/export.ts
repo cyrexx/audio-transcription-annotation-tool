@@ -1,31 +1,37 @@
-import { tokenize, type DistanceEstimate, type LevelAnalysis, type Span } from 'shared'
+import { tokenize, type DistanceEstimate, type RecordingConditions, type Span } from 'shared'
 import type { Item, Span as SpanRow, Transcript } from '../../prisma/generated/client.ts'
 import { prisma } from '../db.ts'
-import { levelsOf, recordingConditions, toSpan } from './items.ts'
+import { recordingConditions, toSpan } from './items.ts'
+
+/** Which of the two candidates the exported value came from. */
+type ValueSource = 'annotator' | 'derived' | null
 
 /** One JSONL line of the gold standard. */
 export interface ExportRecord {
   itemId: string
-  audio: { filename: string; path: string; mimeType: string }
+  audio: {
+    filename: string
+    /** The `path` from the transcript file (or the filename for pasted text): what the pipeline knows. */
+    sourcePath: string
+    /** Where the bytes live, relative to the storage directory. */
+    storagePath: string
+    mimeType: string
+  }
   status: string
   annotator: string | null
   originalTranscript: string
   correctedTranscript: string
   /** Token ranges plus character offsets and the covered text, so consumers need no tokenizer. */
-  spans: (Span & { charStart: number; charEnd: number; text: string })[]
-  recordingConditions: {
-    durationSec: number
-    sampleRate: number | null
-    channels: number | null
-    bitDepth: number | null
-    container: string | null
-    codec: string | null
-    metadata: Record<string, string>
+  spans: (Omit<Span, 'id'> & { charStart: number; charEnd: number; text: string })[]
+  /** Header facts and levels as read, plus the effective speech rate and distance with their source. */
+  recordingConditions: Omit<
+    RecordingConditions,
+    'levelsError' | 'speechRateWpm' | 'distanceEstimate'
+  > & {
     speechRateWpm: number | null
-    speechRateSource: 'annotator' | 'derived' | null
+    speechRateSource: ValueSource
     distance: DistanceEstimate | null
-    distanceSource: 'annotator' | 'derived' | null
-    levels: LevelAnalysis | null
+    distanceSource: ValueSource
   }
   exportedAt: string
 }
@@ -47,50 +53,42 @@ export async function exportRecords(includeUnfinished: boolean): Promise<ExportR
 export function toExportRecord(item: Exportable): ExportRecord {
   const corrected = item.correctedText ?? item.transcript.label
   const tokens = tokenize(corrected)
-  const conditions = recordingConditions(item)
+  const {
+    levelsError: _levelsError,
+    speechRateWpm,
+    distanceEstimate,
+    ...conditions
+  } = recordingConditions(item)
+  // Span ids change on every save (spans are replaced), so they are not part of the record.
   return {
     itemId: item.id,
-    audio: { filename: item.filename, path: item.storagePath, mimeType: item.mimeType },
+    audio: {
+      filename: item.filename,
+      sourcePath: item.transcript.path,
+      storagePath: item.storagePath,
+      mimeType: item.mimeType,
+    },
     status: item.status,
     annotator: item.annotator,
     originalTranscript: item.transcript.label,
     correctedTranscript: corrected,
     spans: item.spans.map((row) => {
-      const span = toSpan(row)
+      const { id: _id, ...span } = toSpan(row)
       const charStart = tokens[span.start].start
       const charEnd = tokens[span.end - 1].end
       return { ...span, charStart, charEnd, text: corrected.slice(charStart, charEnd) }
     }),
     recordingConditions: {
-      durationSec: item.durationSec,
-      sampleRate: item.sampleRate,
-      channels: item.channels,
-      bitDepth: item.bitDepth,
-      container: item.container,
-      codec: item.codec,
-      metadata: conditions.metadata,
-      ...pick(
-        item.speechRateWpmOverride,
-        conditions.speechRateWpm,
-        'speechRateWpm',
-        'speechRateSource',
-      ),
-      ...pick(item.distanceOverride, conditions.distanceEstimate, 'distance', 'distanceSource'),
-      levels: levelsOf(item),
+      ...conditions,
+      // The annotator's override wins over the derived suggestion, and the record says which it was.
+      speechRateWpm: item.speechRateWpmOverride ?? speechRateWpm,
+      speechRateSource: sourceOf(item.speechRateWpmOverride, speechRateWpm),
+      distance: item.distanceOverride ?? distanceEstimate,
+      distanceSource: sourceOf(item.distanceOverride, distanceEstimate),
     },
     exportedAt: new Date().toISOString(),
   }
 }
 
-/** The annotator's override wins over the derived suggestion, and the record says which it was. */
-function pick<T, K extends string, S extends string>(
-  override: T | null,
-  derived: T | null,
-  key: K,
-  sourceKey: S,
-) {
-  const value = override ?? derived
-  const source = override !== null ? 'annotator' : derived !== null ? 'derived' : null
-  return { [key]: value, [sourceKey]: source } as Record<K, T | null> &
-    Record<S, 'annotator' | 'derived' | null>
-}
+const sourceOf = (override: unknown, derived: unknown): ValueSource =>
+  override !== null ? 'annotator' : derived !== null ? 'derived' : null

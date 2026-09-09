@@ -31,6 +31,11 @@ describe('spanInputSchema', () => {
     expect(spanInputSchema.safeParse(wrong).success).toBe(false)
   })
 
+  it('rejects negative measurements', () => {
+    const wrong = { type: 'MEASUREMENT', start: 0, end: 1, attributes: { value: -5, unit: 'mg' } }
+    expect(spanInputSchema.safeParse(wrong).success).toBe(false)
+  })
+
   it('rejects empty and inverted ranges', () => {
     const base = { type: 'NAMED_ENTITY', attributes: { kind: 'place' } }
     expect(spanInputSchema.safeParse({ ...base, start: 2, end: 2 }).success).toBe(false)

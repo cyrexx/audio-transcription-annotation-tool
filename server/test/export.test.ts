@@ -47,7 +47,7 @@ describe('GET /api/export', () => {
     const [record] = records
     expect(record).toMatchObject({
       itemId: id,
-      audio: { filename: 'done.wav', mimeType: 'audio/wav' },
+      audio: { filename: 'done.wav', sourcePath: 'audio/done.wav', mimeType: 'audio/wav' },
       status: 'DONE',
       annotator: 'Joe',
       originalTranscript: 'Cefuroxin eintausendfuenfhundert Milligramm',
@@ -63,6 +63,8 @@ describe('GET /api/export', () => {
         distanceSource: 'derived',
       },
     })
+    expect(record.audio.storagePath).toMatch(/\.wav$/)
+    expect(record.spans[0]).not.toHaveProperty('id')
     expect(record.spans).toEqual([
       expect.objectContaining({
         type: 'MEASUREMENT',

@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs'
+import { readdir } from 'node:fs/promises'
 import path from 'node:path'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { config } from '../src/config.ts'
@@ -140,9 +141,11 @@ describe('POST /api/audio', () => {
 
   it('rejects files over the size limit with a clear message', async () => {
     // 40 s at 16 kHz mono 16-bit is 1.28 MB, over the 1 MB limit configured for tests.
+    const filesBefore = (await readdir(config.storageDir)).length
     const res = await uploadWav('big.wav', { seconds: 40 }).expect(413)
     expect(res.body.error).toMatch(/1 MB upload limit/)
     expect(await prisma.item.count()).toBe(0)
+    expect((await readdir(config.storageDir)).length).toBe(filesBefore)
   })
 })
 

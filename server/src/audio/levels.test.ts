@@ -33,7 +33,12 @@ describe('analyzeLevels', () => {
   it('separates speech level from the pauses between phrases', () => {
     // Half a second of loud tone (speech) followed by faint noise (room tone).
     const tone = (t: number) => 0.5 * Math.sin(2 * Math.PI * 300 * t)
-    const noise = () => (Math.random() * 2 - 1) * 0.001
+    // Deterministic pseudo-random noise, so the expected floor is the same on every run.
+    let seed = 12345
+    const noise = () => {
+      seed = (seed * 1103515245 + 12345) % 2147483648
+      return (seed / 2147483648 - 0.5) * 0.002
+    }
     const signal = fill(1, (t) => (t < 0.5 ? tone(t) : noise()))
     const levels = analyzeLevels(signal, RATE)
     // Tone RMS is 0.5 / sqrt(2) = -9 dBFS; uniform noise RMS is 0.001 / sqrt(3) = -64.8 dBFS.

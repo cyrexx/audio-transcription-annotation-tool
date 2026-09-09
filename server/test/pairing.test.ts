@@ -92,12 +92,30 @@ describe('pairing', () => {
     expect((await api().get('/api/pairing')).body.transcripts).toHaveLength(1)
   })
 
+  it('refuses to pair a transcript that is already paired, or one that does not exist', async () => {
+    const { body: first } = await uploadWav('first.wav', { seconds: 16 })
+    const { body: second } = await uploadWav('second.wav', { seconds: 16 })
+    const { body: report } = await importTranscripts([{ path: 'first.wav', label: 'x' }])
+    const transcriptId = report.accepted[0].transcriptId
+    expect(report.accepted[0].pairedItemId).toBe(first.itemId)
+
+    const taken = await api()
+      .post(`/api/items/${second.itemId}/pair`)
+      .send({ transcriptId })
+      .expect(409)
+    expect(taken.body.error).toMatch(/already paired with first\.wav/)
+    await api().post(`/api/items/${second.itemId}/pair`).send({ transcriptId: 'nope' }).expect(404)
+    await api().post(`/api/items/${second.itemId}/unpair`).expect(409)
+    await api().post('/api/items/nope/unpair').expect(404)
+  })
+
   it('accepts a transcript pasted for one item', async () => {
     const { body: upload } = await uploadWav('pasted.wav', { seconds: 16 })
-    const { body: item } = await api()
+    await api()
       .post(`/api/items/${upload.itemId}/transcript`)
       .send({ label: 'Getippter Text' })
-      .expect(200)
+      .expect(204)
+    const { body: item } = await api().get(`/api/items/${upload.itemId}`).expect(200)
     expect(item.transcript.source).toBe('PASTE')
     expect(item.originalText).toBe('Getippter Text')
     await api().post(`/api/items/${upload.itemId}/transcript`).send({ label: 'again' }).expect(409)

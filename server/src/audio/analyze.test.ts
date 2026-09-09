@@ -1,16 +1,24 @@
 import { spawnSync } from 'node:child_process'
-import { mkdtemp, writeFile } from 'node:fs/promises'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it } from 'vitest'
 import { sine, synthWav } from '../../test/helpers/synthWav.ts'
 import { config } from '../config.ts'
 import { analyzeAudio, UnsupportedAudioError } from './analyze.ts'
 import { decodeWithFfmpeg } from './ffmpeg.ts'
 
+const tempDirs: string[] = []
+afterAll(() => Promise.all(tempDirs.map((dir) => rm(dir, { recursive: true, force: true }))))
+
+async function tempDir(prefix: string): Promise<string> {
+  const dir = await mkdtemp(path.join(tmpdir(), prefix))
+  tempDirs.push(dir)
+  return dir
+}
+
 async function tempFile(name: string, content: Buffer): Promise<string> {
-  const dir = await mkdtemp(path.join(tmpdir(), 'analyze-'))
-  const file = path.join(dir, name)
+  const file = path.join(await tempDir('analyze-'), name)
   await writeFile(file, content)
   return file
 }
@@ -124,8 +132,7 @@ const ffmpegAvailable = spawnSync(config.ffmpegPath, ['-version']).status === 0
 /** ffmpeg-made inputs; these run only where ffmpeg is installed and skip elsewhere. */
 describe.skipIf(!ffmpegAvailable)('lossy formats through ffmpeg', () => {
   async function encode(name: string, seconds: number, ...args: string[]): Promise<string> {
-    const dir = await mkdtemp(path.join(tmpdir(), 'encode-'))
-    const file = path.join(dir, name)
+    const file = path.join(await tempDir('encode-'), name)
     const result = spawnSync(config.ffmpegPath, [
       '-v',
       'error',

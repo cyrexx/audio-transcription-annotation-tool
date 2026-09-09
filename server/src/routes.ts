@@ -94,7 +94,8 @@ api.put('/items/:id/annotation', async (req, res) => {
 
 api.post('/items/:id/transcript', async (req, res) => {
   const { label } = z.object({ label: z.string().trim().min(1) }).parse(req.body)
-  res.json(await pasteTranscript(req.params.id, label))
+  await pasteTranscript(req.params.id, label)
+  res.status(204).end()
 })
 
 api.post('/items/:id/pair', async (req, res) => {

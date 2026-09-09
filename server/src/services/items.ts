@@ -76,14 +76,13 @@ export async function updateAnnotation(id: string, update: AnnotationUpdate): Pr
 }
 
 /** Stores a transcript typed into the UI and pairs it with the item. */
-export async function pasteTranscript(id: string, label: string): Promise<ItemDetail> {
+export async function pasteTranscript(id: string, label: string): Promise<void> {
   const item = await getItemRow(id)
   if (item.transcriptId) throw new HttpError(409, 'Item already has a transcript; unpair it first')
   const transcript = await prisma.transcript.create({
     data: { path: item.filename, filename: item.filename, label, source: 'PASTE' },
   })
   await link(item.id, transcript)
-  return getItem(id)
 }
 
 export async function pairItem(id: string, transcriptId: string): Promise<void> {

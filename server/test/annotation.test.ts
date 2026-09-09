@@ -120,6 +120,11 @@ describe('PUT /api/items/:id/annotation', () => {
     expect(reopened.status).toBe('IN_PROGRESS')
   })
 
+  it('answers 404 for an unknown item', async () => {
+    await api().put('/api/items/does-not-exist/annotation').send(baseUpdate).expect(404)
+    await api().get('/api/items/does-not-exist').expect(404)
+  })
+
   it('refuses to annotate auto-rejected items and items without a transcript', async () => {
     const { body: short } = await uploadWav('short.wav', { seconds: 5 })
     const rejected = await api()

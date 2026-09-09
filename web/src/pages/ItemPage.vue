@@ -27,8 +27,6 @@ import { estimateTokenTime } from '../lib/timestamps.ts'
 const props = defineProps<{ id: string }>()
 
 const AUTOSAVE_MS = 800
-/** After a failed save (API restarting, network blip) try again without the user doing anything. */
-const RETRY_MS = 5000
 
 const item = ref<ItemDetail | null>(null)
 const loadError = ref('')
@@ -95,8 +93,6 @@ const update = computed<AnnotationUpdate>(() => ({
 const serialized = computed(() => JSON.stringify(update.value))
 let lastSaved = ''
 let timer: ReturnType<typeof setTimeout> | undefined
-/** Set on unmount: a retry from a left page must not overwrite what a newer page saved. */
-let gone = false
 
 watch(serialized, (now) => {
   if (!editable.value || now === lastSaved) return
@@ -122,25 +118,25 @@ async function save(status?: 'IN_PROGRESS' | 'DONE') {
     } else {
       // Edits arrived while the request was in flight; they are not saved yet.
       saveState.value = 'dirty'
-      if (!gone) timer = setTimeout(() => void save(), AUTOSAVE_MS)
+      timer = setTimeout(() => void save(), AUTOSAVE_MS)
     }
   } catch (e) {
+    // Stays visible in the header; the next change or Ctrl+S saves again.
     saveState.value = 'error'
     saveError.value = (e as Error).message
-    if (!gone) timer = setTimeout(() => void save(status), RETRY_MS)
   }
 }
 
-const unsaved = () =>
-  saveState.value === 'dirty' || saveState.value === 'saving' || saveState.value === 'error'
-
 /** The browser shows its own "leave page?" dialog while a save is pending or failed. */
 function onBeforeUnload(event: BeforeUnloadEvent) {
-  if (unsaved()) event.preventDefault()
+  if (saveState.value !== 'idle' && saveState.value !== 'saved') event.preventDefault()
 }
 
-// In-app navigation bypasses beforeunload, so ask the same question there.
-onBeforeRouteLeave(() => !unsaved() || confirm('Unsaved changes will be lost. Leave anyway?'))
+// In-app navigation bypasses beforeunload. Pending work is flushed on unmount, so only a
+// failed save needs the question.
+onBeforeRouteLeave(
+  () => saveState.value !== 'error' || confirm('The last save failed. Leave and lose the changes?'),
+)
 
 // Editing -------------------------------------------------------------------------------
 
@@ -271,7 +267,6 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown)
   window.removeEventListener('beforeunload', onBeforeUnload)
-  gone = true
   clearTimeout(timer)
   // One last attempt for pending work; if it fails there is no page left to retry from.
   if (saveState.value === 'dirty' || saveState.value === 'error') void save()

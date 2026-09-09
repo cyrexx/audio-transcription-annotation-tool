@@ -72,7 +72,7 @@ const spanBody = z.discriminatedUnion('type', [
     ...range,
     type: z.literal('MEASUREMENT'),
     attributes: z.object({
-      value: z.number().finite(),
+      value: z.number().finite().nonnegative(),
       unit: z.enum(MEASUREMENT_UNITS),
     }),
   }),

@@ -92,6 +92,7 @@ model Transcript {
   createdAt DateTime @default(now())
 
   @@index([filename])
+  @@index([path])
 }
 
 /// A typed annotation over a token range of the item's corrected text.
