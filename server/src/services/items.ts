@@ -4,6 +4,7 @@ import {
   sameTypeAndRange,
   speechRateWpm,
   tokenCount,
+  tokenize,
   type AnnotationUpdate,
   type ItemDetail,
   type ItemSummary,
@@ -46,7 +47,8 @@ export async function updateAnnotation(id: string, update: AnnotationUpdate): Pr
     throw new HttpError(409, 'Auto-rejected items are not annotated')
   if (!item.transcriptId) throw new HttpError(409, 'Item has no transcript to annotate yet')
 
-  const tokens = tokenCount(update.correctedText)
+  const words = tokenize(update.correctedText)
+  const tokens = words.length
   update.spans.forEach((span, i) => {
     if (span.end > tokens) {
       throw new HttpError(
@@ -54,9 +56,12 @@ export async function updateAnnotation(id: string, update: AnnotationUpdate): Pr
         `spans.${i}: ends at token ${span.end} but the text has ${tokens} tokens`,
       )
     }
-    const twin = update.spans.findIndex((other, j) => j < i && sameTypeAndRange(span, other))
-    if (twin !== -1) {
-      throw new HttpError(400, `spans.${i}: same type on the same words as spans.${twin}`)
+    if (update.spans.some((other, j) => j < i && sameTypeAndRange(span, other))) {
+      const covered = words
+        .slice(span.start, span.end)
+        .map((w) => w.text)
+        .join(' ')
+      throw new HttpError(400, `spans.${i}: a second ${span.type} span on "${covered}"`)
     }
   })
 
