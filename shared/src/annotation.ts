@@ -92,6 +92,18 @@ type Finalized<T> = T extends { type: 'MEASUREMENT'; attributes: infer A }
 /** A stored span: input plus derived attributes. */
 export type Span = Finalized<SpanInput> & { id: string }
 
+/**
+ * One span per type per range: a second MEDICAL_TERM on the same words is a correction to the
+ * first, not a new annotation, so both sides refuse it. Different types on the same words are
+ * fine; that is what overlapping spans are for.
+ */
+export function sameTypeAndRange(
+  a: { type: SpanType; start: number; end: number },
+  b: { type: SpanType; start: number; end: number },
+): boolean {
+  return a.type === b.type && a.start === b.start && a.end === b.end
+}
+
 /** Adds attributes the annotator does not enter by hand. */
 export function finalizeSpan(span: SpanInput): Finalized<SpanInput> {
   if (span.type !== 'MEASUREMENT') return span

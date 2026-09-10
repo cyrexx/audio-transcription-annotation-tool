@@ -396,6 +396,7 @@ const SAVE_LABELS = {
             :selection="formSelection"
             :selection-text="selectionText"
             :span="activeSpan"
+            :spans="spans"
             :token-count="tokens.length"
             @save="saveSpan"
             @delete="deleteSpan"

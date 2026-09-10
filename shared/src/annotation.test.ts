@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { finalizeSpan, spanInputSchema } from './annotation.ts'
+import { finalizeSpan, sameTypeAndRange, spanInputSchema } from './annotation.ts'
 
 describe('spanInputSchema', () => {
   it('accepts every type with its attributes', () => {
@@ -78,5 +78,14 @@ describe('finalizeSpan', () => {
       attributes: { category: 'device', note: 'suture' },
     })
     expect(finalizeSpan(span)).toEqual(span)
+  })
+})
+
+describe('sameTypeAndRange', () => {
+  it('treats the same type on the same words as one annotation, whatever the attributes', () => {
+    const a = { type: 'MEDICAL_TERM', start: 2, end: 3 } as const
+    expect(sameTypeAndRange(a, { ...a })).toBe(true)
+    expect(sameTypeAndRange(a, { ...a, type: 'SPELLED_OUT' })).toBe(false)
+    expect(sameTypeAndRange(a, { ...a, end: 4 })).toBe(false)
   })
 })

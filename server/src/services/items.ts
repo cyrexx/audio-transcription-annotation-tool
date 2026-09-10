@@ -1,6 +1,7 @@
 import {
   estimateDistance,
   finalizeSpan,
+  sameTypeAndRange,
   speechRateWpm,
   tokenCount,
   type AnnotationUpdate,
@@ -52,6 +53,10 @@ export async function updateAnnotation(id: string, update: AnnotationUpdate): Pr
         400,
         `spans.${i}: ends at token ${span.end} but the text has ${tokens} tokens`,
       )
+    }
+    const twin = update.spans.findIndex((other, j) => j < i && sameTypeAndRange(span, other))
+    if (twin !== -1) {
+      throw new HttpError(400, `spans.${i}: same type on the same words as spans.${twin}`)
     }
   })
 

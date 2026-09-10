@@ -7,6 +7,7 @@ import {
   MEDICAL_CATEGORIES,
   NUMBER_RENDERINGS,
   normalizeMeasurement,
+  sameTypeAndRange,
   SPAN_TYPES,
   spanInputSchema,
   type MeasurementUnit,
@@ -21,6 +22,8 @@ const props = defineProps<{
   selectionText: string
   /** Set when editing an existing span; null when creating one for the selection. */
   span: EditorSpan | null
+  /** All spans of the item, to refuse a second one of the same type on the same words. */
+  spans: EditorSpan[]
   tokenCount: number
 }>()
 
@@ -93,6 +96,11 @@ function save() {
   if (!result.success) {
     const issue = result.error.issues[0]
     error.value = `${issue.path.filter((p) => p !== 'attributes').join('.') || 'value'}: ${issue.message}`
+    return
+  }
+  const twin = props.spans.find((s) => s.id !== props.span?.id && sameTypeAndRange(s, result.data))
+  if (twin) {
+    error.value = `A ${label(twin.type)} span already covers these words; open it to change its attributes.`
     return
   }
   emit('save', result.data)

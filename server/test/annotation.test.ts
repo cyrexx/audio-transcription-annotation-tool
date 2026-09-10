@@ -86,6 +86,35 @@ describe('PUT /api/items/:id/annotation', () => {
     expect(await prisma.span.count()).toBe(6)
   })
 
+  it('rejects a second span of the same type on the same words, whatever its attributes', async () => {
+    const id = await createPairedItem('twins.wav', TEXT)
+    const twins = [
+      { type: 'MEDICAL_TERM', start: 2, end: 3, attributes: { category: 'drug', note: '' } },
+      {
+        type: 'MEDICAL_TERM',
+        start: 2,
+        end: 3,
+        attributes: { category: 'drug', note: 'other note' },
+      },
+    ]
+    const res = await api()
+      .put(`/api/items/${id}/annotation`)
+      .send({ ...baseUpdate, spans: twins })
+      .expect(400)
+    expect(res.body.error).toMatch(/spans\.1: same type on the same words as spans\.0/)
+    expect(await prisma.span.count()).toBe(0)
+
+    // A different type on the same words is an overlap, which is allowed.
+    const overlap = [
+      twins[0],
+      { type: 'SPELLED_OUT', start: 2, end: 3, attributes: { resolved: 'Cefuroxim' } },
+    ]
+    await api()
+      .put(`/api/items/${id}/annotation`)
+      .send({ ...baseUpdate, spans: overlap })
+      .expect(200)
+  })
+
   it('rejects attributes that do not match the span type', async () => {
     const id = await createPairedItem('attrs.wav', TEXT)
     const bad = {

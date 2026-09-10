@@ -9,8 +9,8 @@ unique foreign key. **Span**: a typed annotation over a token range of the corre
 attributes in a JSON column validated by a Zod discriminated union shared with the client.
 
 Separate rows because either side can arrive first or be missing: an unmatched transcript is a
-row nobody points at, unmatched audio an item with a null key, pairing flips that key. The model's
-label on Transcript and the annotator's version on Item is what makes the original immutable.
+row nobody points at, unmatched audio an item with a null key, pairing flips that key. The label on
+Transcript and the annotator's version on Item is what makes the original immutable.
 
 ## Decisions and trade-offs
 
@@ -24,7 +24,9 @@ hunk per changed place. Spans before a hunk stay, after it shift, overlapping it
 ones drop. Text and spans are saved in one `PUT`, so the server can reject a span past the text.
 
 **Overlapping spans are supported**; a NUMBER inside a MEASUREMENT is a real case. A word is
-coloured by its innermost span and underlined by the outer one.
+coloured by its innermost span and underlined by the outer one. One span per type per range,
+though: a second MEDICAL_TERM on the same words is a correction to the first, so form and server
+both refuse it and point at the existing span.
 
 **Word click to timestamp is an estimate** interpolated from character position: the format
 carries no timings and aligners are out of scope.
@@ -32,9 +34,9 @@ carries no timings and aligners are out of scope.
 **Audio facts are read once, on the server, at upload.** `music-metadata` parses all three formats
 and thereby validates the content; bit depth exists only for PCM. Levels need samples: WAV is
 decoded natively, so demo, tests and the clinical format never need ffmpeg; mp3/m4a use ffmpeg
-when present and otherwise say why the estimate is missing. System ffmpeg is optional rather than
-bundled: `ffmpeg-static` would add an 80 MB download to every `yarn install` for an optional
-estimate, and the failure mode without it is a labelled gap in the panel, not a broken install.
+when present and otherwise say why the estimate is missing. ffmpeg stays optional rather than
+bundled: `ffmpeg-static` would add 80 MB to every `yarn install` for an optional estimate, and
+the failure mode without it is a labelled gap, not a broken install.
 
 **Distance estimate.** RMS over 50 ms windows: the 10th percentile is the noise floor (pauses), the
 90th the speech level, their difference the level-to-noise ratio. Close is ratio ≥ 30 dB and speech
@@ -65,8 +67,8 @@ default; a checkbox adds those in progress.
   transcript, but are not annotated.
 - No error rate is computed: the brief's sentence explains why the original stays immutable; the
   rate belongs to the evaluation pipeline, and the export carries both transcripts for it.
-- Localhost is the security boundary: API and database bind to 127.0.0.1, crafted audio headers
-  are rejected, level analysis stops at 60 minutes, and parser failures answer with a 4xx.
+- Localhost is the security boundary: API and database bind to 127.0.0.1; crafted audio headers
+  are rejected, level analysis stops at 60 minutes, parser failures answer with a 4xx.
 
 ## Stack and deviations
 
@@ -76,8 +78,11 @@ install and `yarn dev`, which applies the migration and the seed itself.
 
 ## Cut for time, and next
 
-- Keyboard-only word selection (a token cursor on the arrow keys); a waveform under the seek bar.
-- Drag handles on a span's highlight; boundaries move one word at a time from the form.
+- Keyboard-only word selection (a token cursor on the arrow keys); a waveform under the seek bar;
+  drag handles on a span's highlight (boundaries move one word at a time from the form).
 - Deleting items, server-side paging, a production build served by Express.
-- Word timings from the model, should it emit them: the transcript schema can carry them and
-  replace the interpolation without touching spans.
+- Word timings from the model, should it emit them: the schema can carry them and replace the
+  interpolation without touching spans.
+- Rejected: copying a span to other occurrences of the same words. The brief's own "neue Zeile",
+  command or literal, shows identical words needing different spans; propagating by text match
+  is the automatic pre-annotation the brief excludes.
