@@ -49,9 +49,10 @@ yourself in step 8. Every step below names the exact value to enter.
    **Alt+.** to change speed, **Alt+0** to return to the start. Click any word to jump the audio
    near it (this also selects the word for a span; _Esc_ closes the form). Expand _Keyboard
    shortcuts and mouse actions_ at the bottom of the left column for the full list.
-4. **Correct the text.** Click _Edit text_ (or press **Alt+E**). Change `Cefuroxin` to
-   `Cefuroxim`, `Leisten Hernie` to `Leistenhernie`, and `Proleen` to `Prolene`. Click _Annotate_
-   to return. There is no save button: every change is saved about a second after you make it,
+4. **Correct the text.** Click `Cefuroxin`, then _Edit text_ (or **Alt+E**): the editor opens
+   with that word selected and the text laid out exactly as before, so typing `Cefuroxim`
+   replaces it. Also change `Leisten Hernie` to `Leistenhernie` and `Proleen` to `Prolene`.
+   Click _Annotate_ to return. There is no save button: every change is saved about a second after you make it,
    and the header goes from _Unsaved changes_ to _✓ Saved_ (usually too fast to notice).
    **Ctrl+S** saves immediately.
 5. **Add spans** (in _Annotate_ mode; the form appears on the right after each selection. The

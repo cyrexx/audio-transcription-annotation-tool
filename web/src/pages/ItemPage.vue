@@ -197,7 +197,8 @@ function clearSelection() {
 
 function toggleMode() {
   mode.value = mode.value === 'edit' ? 'annotate' : 'edit'
-  clearSelection()
+  // Entering edit mode keeps the selection: the editor puts the caret on it.
+  if (mode.value === 'annotate') clearSelection()
 }
 
 // Transcript pairing --------------------------------------------------------------------
@@ -371,7 +372,7 @@ const SAVE_LABELS = {
               :tokens="tokens"
               :spans="spans"
               :mode="mode"
-              :selection="selection"
+              :selection="formSelection"
               :active-span-id="activeSpanId"
               :editable="editable"
               @update:text="onTextChange"

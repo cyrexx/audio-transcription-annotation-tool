@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Token } from 'shared'
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { coveringSpans, type EditorSpan } from '../lib/spans.ts'
 
 const props = defineProps<{
@@ -45,6 +45,27 @@ function tokenClass(i: number) {
   }
 }
 
+const textarea = useTemplateRef<HTMLTextAreaElement>('textarea')
+
+// Entering edit mode puts the caret on the word the annotator last clicked, selected, so the
+// correction can be typed at once; the layout below matches the token view, so the word does
+// not move.
+watch(
+  () => props.mode,
+  async (mode) => {
+    if (mode !== 'edit') return
+    await nextTick()
+    const ta = textarea.value
+    if (!ta) return
+    ta.focus()
+    if (props.selection) {
+      const first = props.tokens[props.selection.start]
+      const last = props.tokens[props.selection.end - 1]
+      if (first && last) ta.setSelectionRange(first.start, last.end)
+    }
+  },
+)
+
 const anchor = ref<number | null>(null)
 /** Token under the pointer while dragging, so the range about to be selected is visible. */
 const hover = ref<number | null>(null)
@@ -83,6 +104,8 @@ function onMouseUp(i: number, event: MouseEvent) {
 <template>
   <textarea
     v-if="mode === 'edit'"
+    ref="textarea"
+    class="editor"
     :value="text"
     :readonly="!editable"
     spellcheck="false"
@@ -110,6 +133,30 @@ function onMouseUp(i: number, event: MouseEvent) {
   line-height: 2.1;
   font-size: 1.05rem;
   user-select: none;
+}
+
+/*
+ * Same metrics as the token view, so words keep their place when switching modes: the same font
+ * and line height, word-spacing standing in for the 0.1 rem of padding on each side of a token,
+ * no border (it would change the wrapping width), height following the content.
+ */
+.editor {
+  font-size: 1.05rem;
+  line-height: 2.1;
+  word-spacing: 0.2rem;
+  padding: 0 0.1rem;
+  border: 0;
+  border-radius: 0;
+  min-height: 0;
+  field-sizing: content;
+  resize: none;
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--accent-soft);
+}
+
+.editor:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--accent);
 }
 
 .tok {
