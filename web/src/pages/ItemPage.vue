@@ -187,6 +187,12 @@ function resizeSpan(start: number, end: number) {
 /** Client-only ids; the server assigns its own. randomUUID needs a secure context, http://localhost is one. */
 const localId = () => crypto.randomUUID?.() ?? `local-${Date.now()}-${Math.random()}`
 
+/** Opens an existing span for editing, as a click on one of its words would. */
+function openSpan(id: string) {
+  activeSpanId.value = id
+  selection.value = null
+}
+
 function deleteSpan() {
   spans.value = spans.value.filter((s) => s.id !== activeSpanId.value)
   clearSelection()
@@ -400,6 +406,7 @@ const SAVE_LABELS = {
             :token-count="tokens.length"
             @save="saveSpan"
             @delete="deleteSpan"
+            @open="openSpan"
             @resize="resizeSpan"
             @cancel="clearSelection"
           />

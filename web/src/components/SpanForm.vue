@@ -31,6 +31,8 @@ const emit = defineEmits<{
   save: [span: SpanInput]
   delete: []
   cancel: []
+  /** Open another span for editing, used when the new one would duplicate it. */
+  open: [id: string]
   /** Moves an existing span's boundaries; applied immediately so the highlight follows. */
   resize: [start: number, end: number]
 }>()
@@ -56,6 +58,8 @@ const DEFAULTS: Record<SpanType, Attrs> = {
 const type = ref<SpanType>('MEDICAL_TERM')
 const attrs = ref<Attrs>({ ...DEFAULTS.MEDICAL_TERM })
 const error = ref('')
+/** The existing span a refused duplicate points at. */
+const twin = ref<EditorSpan | null>(null)
 
 // A new selection or a different span starts the form over; resizing the open span keeps it.
 watch(
@@ -64,6 +68,7 @@ watch(
     type.value = span?.type ?? 'MEDICAL_TERM'
     attrs.value = { ...DEFAULTS[type.value], ...(span?.attributes as Attrs | undefined) }
     error.value = ''
+    twin.value = null
     focusFirstField()
   },
   { immediate: true },
@@ -80,6 +85,7 @@ function setType(next: SpanType) {
   type.value = next
   attrs.value = { ...DEFAULTS[next] }
   error.value = ''
+  twin.value = null
   focusFirstField()
 }
 
@@ -98,9 +104,12 @@ function save() {
     error.value = `${issue.path.filter((p) => p !== 'attributes').join('.') || 'value'}: ${issue.message}`
     return
   }
-  const twin = props.spans.find((s) => s.id !== props.span?.id && sameTypeAndRange(s, result.data))
-  if (twin) {
-    error.value = `A ${label(twin.type)} span already covers these words; open it to change its attributes.`
+  const existing = props.spans.find(
+    (s) => s.id !== props.span?.id && sameTypeAndRange(s, result.data),
+  )
+  if (existing) {
+    twin.value = existing
+    error.value = `A ${label(existing.type)} span already covers these words.`
     return
   }
   emit('save', result.data)
@@ -233,7 +242,12 @@ defineExpose({ setType })
       </template>
     </div>
 
-    <p v-if="error" class="error small">{{ error }}</p>
+    <p v-if="error" class="error small">
+      {{ error }}
+      <button v-if="twin" type="button" class="small" @click="emit('open', twin.id)">
+        Open it
+      </button>
+    </p>
     <div class="row">
       <button type="submit" class="primary">{{ span ? 'Update' : 'Add span' }}</button>
       <button v-if="span" type="button" class="danger" @click="emit('delete')">Delete</button>
