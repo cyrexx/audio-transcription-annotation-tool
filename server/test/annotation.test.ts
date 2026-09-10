@@ -103,6 +103,10 @@ describe('PUT /api/items/:id/annotation', () => {
       .expect(400)
     expect(res.body.error).toMatch(/spans\.1: a second MEDICAL_TERM span on "Cefuroxim"/)
     expect(await prisma.span.count()).toBe(0)
+    await api()
+      .put(`/api/items/${id}/annotation`)
+      .send({ ...baseUpdate, spans: [twins[0], twins[0]] })
+      .expect(400)
 
     // A different type on the same words is an overlap, which is allowed.
     const overlap = [

@@ -21,12 +21,12 @@ drag or shift-click on words; the export adds character offsets and the covered 
 **Spans follow text edits.** Old and new token lists are diffed into hunks (common prefix and
 suffix, then a longest common subsequence): a keystroke is one tiny hunk, a pasted paragraph one
 hunk per changed place. Spans before a hunk stay, after it shift, overlapping it stretch, empty
-ones drop. Text and spans are saved in one `PUT`, so the server can reject a span past the text.
+ones drop, and of two same-type spans pushed onto the same words the first stays. Text and spans are saved in one `PUT`, so the server can reject a span past the text.
 
 **Overlapping spans are supported**; a NUMBER inside a MEASUREMENT is a real case. A word is
 coloured by its innermost span and underlined by the outer one. One span per type per range,
-though: a second MEDICAL_TERM on the same words is a correction to the first, so form and server
-both refuse it and point at the existing span.
+though: a second MEDICAL_TERM on the same words is a correction to the first, so the form refuses
+it and offers to open the existing span, and the server refuses it naming the words.
 
 **Word click to timestamp is an estimate** interpolated from character position: the format
 carries no timings and aligners are out of scope.

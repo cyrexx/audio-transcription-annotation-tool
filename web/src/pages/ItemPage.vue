@@ -21,7 +21,7 @@ import { api } from '../lib/api.ts'
 import { STATUS_LABELS } from '../lib/format.ts'
 import { matchShortcut, matchSpanType, JUMP_FAR_SEC, JUMP_SEC } from '../lib/shortcuts.ts'
 import { shiftSpans } from '../lib/spanShift.ts'
-import { innermostSpanAt, type EditorSpan } from '../lib/spans.ts'
+import { innermostSpanAt, withoutTwins, type EditorSpan } from '../lib/spans.ts'
 import { estimateTokenTime } from '../lib/timestamps.ts'
 
 const props = defineProps<{ id: string }>()
@@ -145,7 +145,7 @@ onBeforeRouteLeave(
 function onTextChange(next: string) {
   const before = tokens.value.map((t) => t.text)
   const after = tokenize(next).map((t) => t.text)
-  spans.value = shiftSpans(before, after, spans.value)
+  spans.value = withoutTwins(shiftSpans(before, after, spans.value))
   text.value = next
   selection.value = null
   activeSpanId.value = null

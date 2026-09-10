@@ -41,8 +41,22 @@ const emit = defineEmits<{
 const uid = useId()
 
 const single = computed(() => props.selection.end - props.selection.start <= 1)
-const resize = (dStart: number, dEnd: number) =>
-  emit('resize', props.selection.start + dStart, props.selection.end + dEnd)
+function resize(dStart: number, dEnd: number) {
+  const start = props.selection.start + dStart
+  const end = props.selection.end + dEnd
+  const existing = props.spans.find(
+    (s) =>
+      s.id !== props.span?.id &&
+      props.span &&
+      sameTypeAndRange(s, { type: props.span.type, start, end }),
+  )
+  if (existing) {
+    twin.value = existing
+    error.value = `A ${label(existing.type)} span already covers those words.`
+    return
+  }
+  emit('resize', start, end)
+}
 
 type Attrs = Record<string, string | number | null>
 
@@ -97,6 +111,7 @@ const normalized = computed(() => {
 })
 
 function save() {
+  twin.value = null
   const candidate = { type: type.value, ...props.selection, attributes: attrs.value }
   const result = spanInputSchema.safeParse(candidate)
   if (!result.success) {
