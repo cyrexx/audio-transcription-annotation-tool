@@ -58,9 +58,10 @@ watch(
     const ta = textarea.value
     if (!ta) return
     ta.focus()
-    if (props.selection) {
-      const first = props.tokens[props.selection.start]
-      const last = props.tokens[props.selection.end - 1]
+    const range = props.spans.find((s) => s.id === props.activeSpanId) ?? props.selection
+    if (range) {
+      const first = props.tokens[range.start]
+      const last = props.tokens[range.end - 1]
       if (first && last) ta.setSelectionRange(first.start, last.end)
     }
   },
@@ -118,7 +119,7 @@ function onMouseUp(i: number, event: MouseEvent) {
         class="tok"
         :class="tokenClass(i)"
         :style="tokenStyle(i)"
-        @mousedown.prevent="startDrag(i)"
+        @mousedown.prevent="editable && startDrag(i)"
         @mouseenter="anchor !== null && (hover = i)"
         @mouseup="onMouseUp(i, $event)"
         >{{ token.text }}</span
@@ -138,7 +139,9 @@ function onMouseUp(i: number, event: MouseEvent) {
 /*
  * Same metrics as the token view, so words keep their place when switching modes: the same font
  * and line height, word-spacing standing in for the 0.1 rem of padding on each side of a token,
- * no border (it would change the wrapping width), height following the content.
+ * no border (it would change the wrapping width), height following the content. Newlines or
+ * runs of spaces the annotator types are shown here but collapsed in the token view, so the
+ * match holds for text with single spaces, which is what the model produces.
  */
 .editor {
   font-size: 1.05rem;
@@ -157,6 +160,13 @@ function onMouseUp(i: number, event: MouseEvent) {
 .editor:focus {
   outline: none;
   box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+@supports not (field-sizing: content) {
+  .editor {
+    min-height: 12rem;
+    resize: vertical;
+  }
 }
 
 .tok {

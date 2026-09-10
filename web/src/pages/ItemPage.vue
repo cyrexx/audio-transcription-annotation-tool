@@ -69,11 +69,13 @@ const selectionText = computed(() =>
 async function load() {
   try {
     const detail = await api.getItem(props.id)
-    text.value = detail.correctedText ?? ''
+    // Textareas normalise CRLF to LF; do the same so token offsets and the textarea agree.
+    text.value = (detail.correctedText ?? '').replace(/\r\n?/g, '\n')
     spans.value = detail.spans.map((s) => ({ ...s }))
     speechRateOverride.value = detail.speechRateWpmOverride
     distanceOverride.value = detail.distanceOverride
     item.value = detail
+    clearSelection()
     lastSaved = serialized.value
     saveState.value = 'idle'
   } catch (e) {
@@ -196,6 +198,7 @@ function clearSelection() {
 }
 
 function toggleMode() {
+  if (!editable.value) return
   mode.value = mode.value === 'edit' ? 'annotate' : 'edit'
   // Entering edit mode keeps the selection: the editor puts the caret on it.
   if (mode.value === 'annotate') clearSelection()
@@ -232,7 +235,7 @@ async function unpair() {
 // Keyboard ------------------------------------------------------------------------------
 
 function onKeydown(event: KeyboardEvent) {
-  if (formSelection.value && editable.value) {
+  if (formSelection.value && editable.value && mode.value === 'annotate') {
     const typeIndex = matchSpanType(event)
     if (typeIndex !== null) {
       event.preventDefault()
@@ -372,7 +375,7 @@ const SAVE_LABELS = {
               :tokens="tokens"
               :spans="spans"
               :mode="mode"
-              :selection="formSelection"
+              :selection="selection"
               :active-span-id="activeSpanId"
               :editable="editable"
               @update:text="onTextChange"
@@ -388,7 +391,7 @@ const SAVE_LABELS = {
       <div class="stack">
         <section v-if="item.transcript" class="panel">
           <SpanForm
-            v-if="formSelection && editable"
+            v-if="formSelection && editable && mode === 'annotate'"
             ref="spanForm"
             :selection="formSelection"
             :selection-text="selectionText"
@@ -399,7 +402,7 @@ const SAVE_LABELS = {
             @resize="resizeSpan"
             @cancel="clearSelection"
           />
-          <p v-else class="muted small">
+          <p v-else-if="editable" class="muted small">
             Select words in the transcript (click, drag or shift-click) to create a span, or click a
             highlighted word to edit its span.
           </p>

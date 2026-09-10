@@ -50,8 +50,7 @@ yourself in step 8. Every step below names the exact value to enter.
    near it (this also selects the word for a span; _Esc_ closes the form). Expand _Keyboard
    shortcuts and mouse actions_ at the bottom of the left column for the full list.
 4. **Correct the text.** Click `Cefuroxin`, then _Edit text_ (or **Alt+E**): the editor opens
-   with that word selected and the text laid out exactly as before, so typing `Cefuroxim`
-   replaces it. Also change `Leisten Hernie` to `Leistenhernie` and `Proleen` to `Prolene`.
+   with that word selected and the text laid out as before, so typing `Cefuroxim` replaces it. Also change `Leisten Hernie` to `Leistenhernie` and `Proleen` to `Prolene`.
    Click _Annotate_ to return. There is no save button: every change is saved about a second after you make it,
    and the header goes from _Unsaved changes_ to _✓ Saved_ (usually too fast to notice).
    **Ctrl+S** saves immediately.
@@ -91,7 +90,8 @@ yourself in step 8. Every step below names the exact value to enter.
    - **Unpair and paste:** open `003_kurznotiz.wav`, click _Unpair_ next to the original
      transcript and confirm. The item now offers a paste box: paste
      `Kurznotiz Patient nuechtern Praemedikation mit Midazolam siebeneinhalb Milligramm oral`
-     and click _Use as transcript_. The pasted text becomes the immutable original.
+     and click _Use as transcript_. The pasted text becomes the immutable original; the row it
+     replaced stays in _Transcripts without audio_ on the Ingest page.
    - Optional: upload any `.wav`, `.mp3` or `.m4a` of your own, select it and a transcript, and
      click _Pair selected_. A renamed non-audio file is rejected with a reason (the picker lists
      only audio types; choose "All files" to try a `.txt`).

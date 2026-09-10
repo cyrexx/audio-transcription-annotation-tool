@@ -61,7 +61,8 @@ default; a checkbox adds those in progress.
 - Unpairing discards corrected text and spans, since they referred to that transcript.
 - Annotator is a name typed once in the header: provenance, not a permission.
 - Speech rate uses the corrected transcript, the text that is exported. Status sorts in workflow
-  order. Auto-rejected items are visible and playable but read-only.
+  order. Auto-rejected items are visible and playable, can be paired, unpaired and given a pasted
+  transcript, but are not annotated.
 - No error rate is computed: the brief's sentence explains why the original stays immutable; the
   rate belongs to the evaluation pipeline, and the export carries both transcripts for it.
 - Localhost is the security boundary: API and database bind to 127.0.0.1, crafted audio headers
